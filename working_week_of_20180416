@@ -1,0 +1,306 @@
+SELECT
+parcel_id
+,x_coord_sp
+,y_coord_sp
+FROM run_104_20180406_2014.parcels
+where city_id in (
+97
+,99
+,102
+,103
+,104
+,105
+,107
+,108
+,109
+,117
+,118
+,119
+,121
+,122
+,124
+,125
+,126
+,127
+,130
+,132
+,133
+,134
+,135
+,136
+,137
+)
+;
+
+
+alter table run_104_20180406_2014.parcels_with_built_2014_2050 add column snoh_uu_zoning text;
+
+update run_104_20180406_2014.parcels_with_built_2014_2050 set snoh_uu_zoning = 'na';
+
+update run_104_20180406_2014.parcels_with_built_2014_2050 p
+inner join run_104_20180406_2014.snohomish_uu_parcels_flu f
+on p.parcel_id = f.parcel_id
+set p.snoh_uu_zoning = f.zone_flu;
+
+select
+snoh_uu_zoning
+,plan_type_id
+,count(parcel_id)
+from run_104_20180406_2014.parcels_with_built_2014_2050
+where snoh_uu_zoning not in ('na')
+group by
+snoh_uu_zoning
+,plan_type_id
+;
+
+
+select
+parcel_id
+,plan_type_id
+,faz_id
+,city_id
+,plan_type_id
+,parcel_sqft
+,x_coord_sp
+,y_coord_sp
+,maximum_dwelling_units_per_acre
+,maximum_far
+from run_104_20180406_2014.parcels_with_built_2014_2050
+where snoh_uu_zoning in ('UCENTER')
+and plan_type_id in (356,526)
+;
+
+select * from run_104_20180406_2014.parcels
+where parcel_id = 192663;
+
+select * from run_104_20180406_2014.development_constraints
+where plan_type_id = 526;
+
+
+
+
+
+select *
+#from run_104_20180406_2014.parcels
+from run_104_20180406_2014.parcels_with_built_2014_2050
+where zone_id in (406)
+order by plan_type_id;
+
+select
+snoh_uu_zoning
+#,city_id
+#county_id
+,plan_type_id
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,minimum_far
+,maximum_far
+,count(parcel_id) as parcels
+from run_104_20180406_2014.parcels_with_built_2014_2050
+where plan_type_id in (
+58
+,104
+)
+group by
+snoh_uu_zoning
+#,city_id
+#county_id
+,plan_type_id
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,minimum_far
+,maximum_far
+order by plan_type_id
+;
+
+create table run_104_20180406_2014.parcels_for_snoh_uu_upzone_blowout_test
+select * from run_104_20180406_2014.parcels
+;
+
+select
+parcel_id
+,snoh_uu_zoning
+,plan_type_id
+,faz_id
+,city_id
+,plan_type_id
+,parcel_sqft
+,x_coord_sp
+,y_coord_sp
+,maximum_dwelling_units_per_acre
+,maximum_far
+from run_104_20180406_2014.parcels_with_built_2014_2050
+where parcel_id in
+(
+135709
+,135710
+,135711
+,135712
+,135715
+,135718
+,135721
+,135722
+)
+;
+
+SELECT * FROM run_104_20180406_2014.beccah_snoco_dense_prcl b;
+
+Select
+parcel_id
+,snoh_uu_zoning
+,run_104_20180406_2014.parcels_with_built_2014_2050.plan_type_id
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,minimum_far
+,maximum_far
+,psrc_id
+,jurisdiction
+,zone
+,key_flu
+,run_104_20180406_2014.beccah_snoco_dense_prcl.parcel_sqft
+,run_104_20180406_2014.beccah_snoco_dense_prcl.plan_type_id
+,far
+,units_per_acre
+from run_104_20180406_2014.parcels_with_built_2014_2050
+inner join run_104_20180406_2014.beccah_snoco_dense_prcl
+on run_104_20180406_2014.parcels_with_built_2014_2050.parcel_id = run_104_20180406_2014.beccah_snoco_dense_prcl.psrc_id
+order by run_104_20180406_2014.beccah_snoco_dense_prcl.plan_type_id
+;
+
+select *
+from run_104_20180406_2014.beccah_snoco_dense_prcl
+where psrc_id in (
+192663
+,192673
+,192679
+,192487
+,192678
+,192696
+,192482
+,192675
+,192677
+,192800
+,192670
+,192486
+,192485
+,192848
+,192676
+,192838
+,192483
+,192672
+)
+;
+
+
+SELECT * FROM parcels_with_built_2014_2050 where parcel_id = 192663;
+
+SELECT * FROM run_104_20180406_2014.prcl15_4k limit 19;
+
+alter table run_104_20180406_2014.prcl15_4k
+add column point_x_int integer,
+add column point_y_int integer;
+
+alter table run_104_20180406_2014.prcl15_4k
+drop column y_coord_int;
+
+
+update run_104_20180406_2014.prcl15_4k
+set point_x_int = 0
+,point_y_int = 0
+;
+
+update run_104_20180406_2014.prcl15_4k
+set point_x_int = round(point_x)
+,point_y_int = round(point_y)
+;
+
+alter table run_104_20180406_2014.prcl15_4k
+add column parcel_id integer
+,add column x_coord_sp float
+,add column y_coord_sp float
+;
+
+update run_104_20180406_2014.prcl15_4k
+set parcel_id =0
+,x_coord_sp =0
+,y_coord_sp =0
+;
+
+
+update run_104_20180406_2014.prcl15_4k k
+inner join run_104_20180406_2014.parcels p
+on k.psrc_id = p.parcel_id
+set k.parcel_id = p.parcel_id
+,k.x_coord_sp = p.x_coord_sp
+,k.y_coord_sp = p.y_coord_sp
+;
+
+alter table run_104_20180406_2014.prcl15_4k
+add column x_coord_diff float
+,add column y_coord_diff float
+;
+
+alter table run_104_20180406_2014.prcl15_4k
+add column city_id integer
+;
+
+update run_104_20180406_2014.prcl15_4k k
+inner join run_104_20180406_2014.parcels p
+on k.psrc_id = p.parcel_id
+set k.city_id = p.city_id
+;
+
+update run_104_20180406_2014.prcl15_4k
+set
+x_coord_diff = 0
+,y_coord_diff = 0
+;
+
+update run_104_20180406_2014.prcl15_4k
+set
+x_coord_diff = point_x - x_coord_sp
+,y_coord_diff = point_y - y_coord_sp
+;
+
+
+SELECT
+county
+,city_id
+,count(psrc_id) as parcels
+FROM prcl15_4k
+where abs(x_coord_diff)>5
+or abs(y_coord_diff)>5
+group by
+county
+,city_id;
+
+SELECT * FROM prcl15_4k limit 19;
+
+
+SELECT *
+FROM prcl15_4k
+where parcel_id = 192663;
+
+
+
+create table snoh_psrc15_4k_discrepancies
+SELECT
+county
+,fid
+,orig_fid
+,objectid
+#,objectid_2
+,psrc_id
+,parcel_id
+FROM prcl15_4k
+where (abs(x_coord_diff)>5 or abs(y_coord_diff)>5)
+and county=61
+#and county=61
+order by
+county
+,parcel_id;
+
+
+
+select * from snoh_psrc15_4k_discrepancies;
+
