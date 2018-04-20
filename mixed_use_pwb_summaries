@@ -1,0 +1,83 @@
+
+
+
+SELECT
+city_id
+#,parcel_is_locked_out
+#,got_proposal_of_either_type
+#,had_development_event
+#rgc_id
+#plan_type_id
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,minimum_far
+,maximum_far
+#,zone
+#,definition
+#,max_du_acre_flu
+#,max_far_flu
+#residential_density_category
+#,round(maximum_dwelling_units_per_acre/10,0) as du_per_acre_group
+#,maximum_dwelling_units_per_acre
+#,city_id
+,count(run_104_20180406_2014.parcels_with_built_2014_2050.parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(net_2014_residential_unit_capacity) as net_du_capacity
+,sum(net_2014_non_residential_sqft_capacity) as net_sqft_capacity
+,sum(got_proposal_of_either_type) as parcels_w_proposal
+,sum(got_proposal_of_either_type*parcel_sqft/43560) as acres_w_proposal
+,sum(got_proposal_of_either_type*net_2014_residential_unit_capacity) as parcels_w_proposal_net14_du_capacity
+,sum(got_proposal_of_either_type*net_2014_non_residential_sqft_capacity) as parcels_w_proposal_net14_sqft_capacity
+
+,sum(had_development_event) as parcels_developed
+,sum(had_development_event*parcel_sqft/43560) as acres_developed
+,sum(had_development_event*hu_chg_14_50) as hu_chg_on_developed
+,sum(had_development_event*hh_chg_14_50) as tot_hh_chg_on_developed
+,sum(had_development_event*res_sqft_chg_14_50) as tot_res_sqft_chg_on_developed
+,sum(had_development_event*nonres_sqft_chg_14_50) as tot_nonres_sqft_chg_on_developed
+,sum(had_development_event*job_chg_14_50) as tot_job_chg_on_developed
+,sum(had_development_event*per_chg_14_50) as tot_per_chg_on_developed
+
+,sum(hu_chg_14_50) as tot_hu_chg
+,sum(hh_chg_14_50) as tot_hh_chg
+,sum(res_sqft_chg_14_50) as tot_res_sqft_chg
+,sum(nonres_sqft_chg_14_50) as tot_nonres_sqft_chg
+,sum(job_chg_14_50) as tot_job_chg
+,sum(per_chg_14_50) as tot_per_chg
+,sum(hu_14) as hu_14
+,sum(hu_50) as hu_50
+,sum(res_sqft_14) as res_sqft_14
+,sum(res_sqft_50) as res_sqft_50
+,sum(nonres_sqft_14) as nonres_sqft_14
+,sum(nonres_sqft_50) as nonres_sqft_50
+FROM run_104_20180406_2014.parcels_with_built_2014_2050
+#inner join run_104_20180406_2014.seattle_select_mu_zoning_parcels
+#on run_104_20180406_2014.parcels_with_built_2014_2050.parcel_id = run_104_20180406_2014.seattle_select_mu_zoning_parcels.parcel_id
+
+where
+is_mixed_use = 'yes'
+#parcel_is_locked_out = 0
+#and
+#got_proposal_of_either_type = 0
+#and
+#had_development_event = 1
+#and
+#city_id = 53
+#and
+#zone_id in (3413,3414,3415)
+#and
+#got_proposal_of_either_type = 0
+
+group by
+#plan_type_id
+city_id
+#,minimum_dwelling_units_per_acre
+#,maximum_dwelling_units_per_acre
+#,minimum_far
+#,maximum_far
+#,city_id
+
+#order by
+#residential_density_category
+#,du_per_acre_group
+;
