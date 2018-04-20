@@ -1,0 +1,150 @@
+## Sample CSV import scripts
+
+create table run_104_20180406_2014.seattle_select_mu_zoning_parcels
+(
+fid integer not null
+,join_count integer not null
+,target_fid integer not null
+,parcel_id integer not null
+,jurisdiction text
+,flu_key text
+,definition text
+,max_du_acre float not null
+,max_far float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'T:/2018April/rebeccah/SeaMUZone_prcl.csv'
+INTO TABLE run_104_20180406_2014.seattle_select_mu_zoning_parcels
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+fid
+,join_count
+,target_fid
+,parcel_id
+,jurisdiction
+,flu_key
+,definition
+,max_du_acre
+,max_far
+);
+
+;
+
+create table run_104_20180406_2014.snohomish_uu_parcels_flu
+(
+parcel_id integer not null
+,zone_flu text
+,jurisdiction_flu text
+,key_flu text
+,definition_flu text
+,min_du_flu float not null
+,max_du_flu float not null
+,min_far_flu float not null
+,max_far_flu float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/snohomish_uu_parcels_flu.csv'
+INTO TABLE run_104_20180406_2014.snohomish_uu_parcels_flu
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,zone_flu
+,jurisdiction_flu
+,key_flu
+,definition_flu
+,min_du_flu
+,max_du_flu
+,min_far_flu
+,max_far_flu
+);
+
+
+create table run_104_20180406_2014.beccah_snoco_dense_prcl
+(
+psrc_id integer not null
+,jurisdiction text
+,zone text
+,key_flu text
+,parcel_sqft integer not null
+,plan_type_id integer not null
+,far float not null
+,units_per_acre float not null
+,primary key (psrc_id)
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/SnoCo_DensePrcl.csv'
+INTO TABLE run_104_20180406_2014.beccah_snoco_dense_prcl
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+psrc_id
+,jurisdiction
+,zone
+,key_flu
+,parcel_sqft
+,plan_type_id
+,far
+,units_per_acre
+);
+
+
+
+create table run_104_20180406_2014.prcl15_4k
+(
+fid integer not null
+,objectid integer not null
+,taz integer not null
+,park integer not null
+,acres float not null
+,objectid_2 integer not null
+,pin text
+,area float not null
+,county integer not null
+,major text
+,minor text
+,length float not null
+,psrc_id integer not null
+,length_2 float not null
+,area_2 float not null
+,orig_fid integer not null
+,point_x float not null
+,point_y float not null
+,primary key (psrc_id)
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/psrc15_4k_text.txt'
+INTO TABLE run_104_20180406_2014.prcl15_4k
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+fid
+,objectid
+,taz
+,park
+,acres
+,objectid_2
+,pin
+,area
+,county
+,major
+,minor
+,length
+,psrc_id
+,length_2
+,area_2
+,orig_fid
+,point_x
+,point_y
+);
