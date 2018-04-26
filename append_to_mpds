@@ -1,0 +1,19 @@
+insert into psrc_2014_parcel_baseyear_staging.development_project_proposals_20180426
+(
+proposal_id
+,start_year
+,status_id
+,is_redevelopment
+,parcel_id
+,units_proposed
+,template_id
+)
+select
+proposal_id
+,start_year
+,status_id
+,is_redevelopment
+,parcel_id
+,units_proposed
+,template_id
+from psrc_parcel_working_mpds.tehaleh_20180426
