@@ -1,5 +1,49 @@
 ## Sample CSV import scripts
 
+#  Import for MPD records
+
+create table psrc_parcel_working_mpds.tehaleh_20180426
+(
+proposal_id integer not null
+,start_year integer not null
+,status_id integer not null
+,is_redevelopment integer not null
+,parcel_id integer not null
+,units_proposed integer not null
+,template_id integer not null
+,primary key (proposal_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/UrbanSim/NEW_DIRECTORY/Inputs/base_year_cache/mpds/Reapply_Tehaleh_April2018.csv'
+INTO TABLE psrc_parcel_working_mpds.tehaleh_20180426
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+proposal_id
+,start_year
+,status_id
+,is_redevelopment
+,parcel_id
+,units_proposed
+,template_id
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 create table run_104_20180406_2014.seattle_select_mu_zoning_parcels
 (
 fid integer not null
