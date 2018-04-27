@@ -1,0 +1,94 @@
+create table run_123_20180426_2014.snohomish_blowout_scenario_parcels
+(
+psrc_id integer not null
+#,point_x float not null
+#,point_y float not null
+,zone_flu text
+,key_flu text
+,definition_flu text
+#,min_du_flu float not null
+,max_du_flu float not null
+#,min_far_flu float not null
+,max_far_flu float not null
+,primary key (psrc_id)
+);
+
+
+
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/snoh_blowout_scenario_parcels.csv'
+INTO TABLE run_123_20180426_2014.snohomish_blowout_scenario_parcels
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+psrc_id
+#,point_x
+#,point_y
+,zone_flu
+,key_flu
+,definition_flu
+#,min_du_flu
+,max_du_flu
+#,min_far_flu
+,max_far_flu
+);
+
+
+create table run_123_20180426_2014.snohomish_blowout_scenario_parcels_w_ptid
+SELECT
+run_123_20180426_2014.snohomish_blowout_scenario_parcels.psrc_id
+,run_123_20180426_2014.snohomish_blowout_scenario_parcels.zone_flu
+,run_123_20180426_2014.snohomish_blowout_scenario_parcels.key_flu
+,run_123_20180426_2014.snohomish_blowout_scenario_parcels.definition_flu
+,run_123_20180426_2014.snohomish_blowout_scenario_parcels.max_du_flu
+,run_123_20180426_2014.snohomish_blowout_scenario_parcels.max_far_flu
+,run_123_20180426_2014.parcels.parcel_id
+,run_123_20180426_2014.parcels.plan_type_id
+FROM run_123_20180426_2014.snohomish_blowout_scenario_parcels
+inner join run_123_20180426_2014.parcels
+on run_123_20180426_2014.snohomish_blowout_scenario_parcels.psrc_id = run_123_20180426_2014.parcels.parcel_id
+;
+
+
+select
+key_flu
+,plan_type_id
+,count(parcel_id) as parcels
+from run_123_20180426_2014.snohomish_blowout_scenario_parcels_w_ptid
+group by
+key_flu
+,plan_type_id
+;
+
+select
+city_id
+,plan_type_id
+,count(parcel_id)
+from run_123_20180426_2014.parcels
+where plan_type_id in (58,104)
+group by
+city_id
+,plan_type_id
+;
+
+select * from run_123_20180426_2014.development_constraints
+where plan_type_id in (58,104)
+;
+
+create table run_123_20180426_2014.development_constraints_snoh_blowout_scenario
+select * from run_123_20180426_2014.development_constraints;
+
+
+update run_123_20180426_2014.development_constraints_snoh_blowout_scenario
+#set maximum = 250 where constraint_id = 426
+#set maximum = 5.5 where constraint_id in (881,1350,1945)
+#set maximum = 165 where constraint_id = 472
+set maximum = 5.25 where constraint_id in (921,1392,1986)
+;
+
+select * from run_123_20180426_2014.development_constraints_snoh_blowout_scenario
+where plan_type_id in (58,104)
+order by plan_type_id, generic_land_use_type_id
+;
