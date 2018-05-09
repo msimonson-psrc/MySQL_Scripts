@@ -1,0 +1,175 @@
+# King County
+# ==============
+# NonRes
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.055
+where county_id = 33
+and building_type_id = 3;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.045
+where county_id = 33
+and building_type_id = 8;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.095
+where county_id = 33
+and building_type_id = 13;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.045
+where county_id = 33
+and building_type_id = 20;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.045
+where county_id = 33
+and building_type_id = 21;
+
+# Res
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.075
+#where county_id = 33
+#and building_type_id = 4;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.075
+#where county_id = 33
+#and building_type_id = 12;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.045
+#where county_id = 33
+#and building_type_id = 19;
+
+# Kitsap County
+# ==============
+# NonRes
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.085
+where county_id = 35
+and building_type_id = 3;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 35
+and building_type_id = 8;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.095
+where county_id = 35
+and building_type_id = 13;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 35
+and building_type_id = 20;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 35
+and building_type_id = 21;
+
+# Res
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.145
+#where county_id = 35
+#and building_type_id = 4;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.145
+#where county_id = 35
+#and building_type_id = 12;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.090
+#where county_id = 35
+#and building_type_id = 19;
+
+# Pierce County
+# ==============
+# NonRes
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.080
+where county_id = 53
+and building_type_id = 3;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 53
+and building_type_id = 8;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.095
+where county_id = 53
+and building_type_id = 13;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 53
+and building_type_id = 20;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.060
+where county_id = 53
+and building_type_id = 21;
+
+# Res
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.105
+#where county_id = 53
+#and building_type_id = 4;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.105
+#where county_id = 53
+#and building_type_id = 12;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.070
+#where county_id = 53
+#and building_type_id = 19;
+
+# Snohomish County
+# ==============
+# NonRes
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.065
+where county_id = 61
+and building_type_id = 3;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.055
+where county_id = 61
+and building_type_id = 8;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.085
+where county_id = 61
+and building_type_id = 13;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.055
+where county_id = 61
+and building_type_id = 20;
+
+update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+set target_vacancy_rate = 0.055
+where county_id = 61
+and building_type_id = 21;
+
+# Res
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.085
+#where county_id = 61
+#and building_type_id = 4;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.085
+#where county_id = 61
+#and building_type_id = 12;
+
+#update psrc_2014_parcel_baseyear_staging.target_vacancies_20180509
+#set target_vacancy_rate = 0.050
+#where county_id = 61
+#and building_type_id = 19;
