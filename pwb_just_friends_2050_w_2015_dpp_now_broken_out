@@ -8,12 +8,15 @@
 # development_templates
 # development_template_components
 
+# NEW April 2018 - List of tables needed - output year 2015
+# prior versions had user exporting 2015 table to 2040 or 2050 directory
+# development project proposals 
+
 # List of tables needed - output year 2050
 # parcels
 # buildings
 # households
 # jobs
-# development project proposals (BUT use the 2015 proposals table, export it to 2050 MySQL DB)
 
 # Also need to search for the specific run directory path to the 2050 database, and change that to the new path  
 # Go to very bottom of script, line 980 or so, see what path is being used for creating the 'built_2050' table, and do a search-replace for that
