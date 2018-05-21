@@ -18,9 +18,9 @@
 # households
 # jobs
 
-# Also need to search for the specific run directory path to the 2050 database, and change that to the new path  
-# Go to very bottom of script, line 1026 or so, see what path is being used for creating the 'built_2050' table, and do a search-replace for that
-# 23 total occurances.
+# Also need to search for the specific run directory paths to the 2015 and 2050 databases, and change that to the new path  
+# Go to very bottom of script, line 1026 or so, see what path is being used for creating the 'built_2050' table
+# Do a search-replace in text editor for the 2015 and 2050 versions
 
 # Before starting the script, navigate to the 2014 results database
 
