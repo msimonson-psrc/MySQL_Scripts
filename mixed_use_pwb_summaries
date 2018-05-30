@@ -39,10 +39,16 @@ city_id
 ,sum(had_development_event*per_chg_14_50) as tot_per_chg_on_developed
 
 ,sum(hu_chg_14_50) as tot_hu_chg
+,sum(households_14) as hh_14
+,sum(households_50) as hh_50
 ,sum(hh_chg_14_50) as tot_hh_chg
 ,sum(res_sqft_chg_14_50) as tot_res_sqft_chg
 ,sum(nonres_sqft_chg_14_50) as tot_nonres_sqft_chg
+,sum(jobs_14) as jobs_14
+,sum(jobs_50) as jobs_50
 ,sum(job_chg_14_50) as tot_job_chg
+,sum(persons_14) as persons_14
+,sum(persons_50) as persons_50
 ,sum(per_chg_14_50) as tot_per_chg
 ,sum(hu_14) as hu_14
 ,sum(hu_50) as hu_50
