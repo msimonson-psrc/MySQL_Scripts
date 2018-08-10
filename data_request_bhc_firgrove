@@ -1,0 +1,54 @@
+create table data_request_bhc_firgrove_luv2.parcels_luv2_final
+SELECT * FROM luv2_final_outputs_2014.parcels p;
+
+# drop table data_request_bhc_firgrove_luv2.parcels_in_fircrest;
+
+create table data_request_bhc_firgrove_luv2.parcels_in_firgrove
+(
+FID integer not null
+,Join_count integer not null
+,PSRC_ID integer not null
+,Zone Text
+,Pressure integer not null
+,Storage float not null
+,primary key (PSRC_ID)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/Firgrove/FirgrovePrcl.csv'
+INTO TABLE data_request_bhc_firgrove_luv2.parcels_in_firgrove
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+FID
+,Join_count
+,PSRC_ID
+,Zone
+,Pressure
+,Storage
+);
+
+select * from data_request_bhc_firgrove_luv2.parcels_in_firgrove;
+
+alter table data_request_bhc_firgrove_luv2.parcels_in_firgrove
+add column firgrove_zone_id integer;
+
+update data_request_bhc_firgrove_luv2.parcels_in_firgrove
+set firgrove_zone_id = 1 where Zone='Zone 1';
+
+update data_request_bhc_firgrove_luv2.parcels_in_firgrove
+set firgrove_zone_id = 2 where Zone='Zone 2';
+
+update data_request_bhc_firgrove_luv2.parcels_in_firgrove
+set firgrove_zone_id = 3 where Zone='Zone 3';
+
+select
+Zone
+,firgrove_zone_id
+,count(PSRC_ID) as parcels
+from data_request_bhc_firgrove_luv2.parcels_in_firgrove
+group by
+Zone
+,firgrove_zone_id
+;
