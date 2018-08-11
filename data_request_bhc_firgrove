@@ -52,3 +52,183 @@ group by
 Zone
 ,firgrove_zone_id
 ;
+
+
+SELECT * FROM psrc_parcel_working_mpds.mpd_script_input_file_example_snocobl_actuals m;
+
+
+
+SELECT * FROM data_request_bhc_firgrove_luv2.parcels_luv2_final limit 1;
+
+CREATE TABLE  `data_request_bhc_firgrove_luv2`.`prcl_fir` (
+  `parcel_id` int(11) NOT NULL DEFAULT '0',
+  `census_2010_tract_id` text,
+  `parking_space_hourly` int(11) DEFAULT NULL,
+  `hschool_id` int(11) DEFAULT NULL,
+  `census_2010_block_group_id` text,
+  `city_id` int(11) DEFAULT NULL,
+  `plan_type_description` text,
+  `parking_space_daily` int(11) DEFAULT NULL,
+  `plan_type_id_old` int(11) DEFAULT NULL,
+  `grid_id` int(11) DEFAULT NULL,
+  `census_block_id` int(11) DEFAULT NULL,
+  `y_coord_sp` float DEFAULT NULL,
+  `county_id` int(11) DEFAULT NULL,
+  `plan_type_id` int(11) DEFAULT NULL,
+  `school_district_id` int(11) DEFAULT NULL,
+  `stacked_parcel_id` text,
+  `id_parcel` text,
+  `use_code` text,
+  `regional_geography_id` int(11) DEFAULT NULL,
+  `is_inside_urban_growth_boundary` int(11) DEFAULT NULL,
+  `x_coord_utm` float DEFAULT NULL,
+  `y_coord_utm` float DEFAULT NULL,
+  `stacked_flag` int(11) DEFAULT NULL,
+  `x_coord_sp` float DEFAULT NULL,
+  `elem_id` int(11) DEFAULT NULL,
+  `zipcode` text,
+  `is_waterfront` int(11) DEFAULT NULL,
+  `duplicates` int(11) DEFAULT NULL,
+  `num_building_records` int(11) DEFAULT NULL,
+  `growth_center_id` int(11) DEFAULT NULL,
+  `original_parcel_id` text,
+  `parking_price_hourly` float DEFAULT NULL,
+  `fips_pin` text,
+  `parcel_sqft` int(11) DEFAULT NULL,
+  `genericlanduse1` text,
+  `census_2010_block_id` text,
+  `large_area_id` int(11) DEFAULT NULL,
+  `mschool_id` int(11) DEFAULT NULL,
+  `parcel_sqft_in_gis` int(11) DEFAULT NULL,
+  `is_duplicate` int(11) DEFAULT NULL,
+  `land_value` float DEFAULT NULL,
+  `improvement_value` float DEFAULT NULL,
+  `landuse_description` text,
+  `tax_exempt_flag` int(11) DEFAULT NULL,
+  `zone_id` int(11) DEFAULT NULL,
+  `tractcity_id` int(11) DEFAULT NULL,
+  `id_plat` int(11) DEFAULT NULL,
+  `faz_id` int(11) DEFAULT NULL,
+  `exemption` text,
+  `is_in_transit_zone` int(11) DEFAULT NULL,
+  `parking_price_daily` float DEFAULT NULL,
+  `zip_id` int(11) DEFAULT NULL,
+  `census_block_group_id` int(11) DEFAULT NULL,
+  `faz_group_id` int(11) DEFAULT NULL,
+  `land_use_type_id` int(11) DEFAULT NULL,
+  `mix_split_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`parcel_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+alter table data_request_bhc_firgrove_luv2.prcl_fir add column firgrove int;
+
+SELECT * FROM data_request_bhc_firgrove_luv2.prcl_fir limit 1;
+
+
+LOAD DATA LOCAL INFILE 'T:/2018August/lauren/prcl_fir.csv'
+INTO TABLE data_request_bhc_firgrove_luv2.prcl_fir
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+  parcel_id
+  ,census_2010_tract_id
+  ,parking_space_hourly
+  ,hschool_id
+  ,census_2010_block_group_id
+  ,city_id
+  ,plan_type_description
+  ,parking_space_daily
+  ,plan_type_id_old
+  ,grid_id
+  ,census_block_id
+  ,y_coord_sp
+  ,county_id
+  ,plan_type_id
+  ,school_district_id
+  ,stacked_parcel_id
+  ,id_parcel
+  ,use_code
+  ,regional_geography_id
+  ,is_inside_urban_growth_boundary
+  ,x_coord_utm
+  ,y_coord_utm
+  ,stacked_flag
+  ,x_coord_sp
+  ,elem_id
+  ,zipcode
+  ,is_waterfront
+  ,duplicates
+  ,num_building_records
+  ,growth_center_id
+  ,original_parcel_id
+  ,parking_price_hourly
+  ,fips_pin
+  ,parcel_sqft
+  ,genericlanduse1
+  ,census_2010_block_id
+  ,large_area_id
+  ,mschool_id
+  ,parcel_sqft_in_gis
+  ,is_duplicate
+  ,land_value
+  ,improvement_value
+  ,landuse_description
+  ,tax_exempt_flag
+  ,zone_id
+  ,tractcity_id
+  ,id_plat
+  ,faz_id
+  ,exemption
+  ,is_in_transit_zone
+  ,parking_price_daily
+  ,zip_id
+  ,census_block_group_id
+  ,faz_group_id
+  ,land_use_type_id
+  ,mix_split_id
+  ,firgrove
+);
+
+
+SELECT
+count(parcel_id)
+FROM data_request_bhc_firgrove_luv2.prcl_fir;
+
+SELECT
+count(parcel_id)
+FROM data_request_bhc_firgrove_luv2.parcels_luv2_final;
+
+select
+Zone
+,firgrove_zone_id
+,count(PSRC_ID) as parcels
+from data_request_bhc_firgrove_luv2.parcels_in_firgrove
+group by
+Zone
+,firgrove_zone_id
+;
+
+select
+firgrove
+,count(parcel_id) as parcels
+from data_request_bhc_firgrove_luv2.prcl_fir
+group by
+firgrove
+;
+
+create table data_request_bhc_firgrove_luv2.firgrove
+(
+firgrove_id integer not null
+,firgrove integer not null
+,firgrove_text Text
+);
+
+SELECT * FROM data_request_bhc_firgrove_luv2.firgrove f;
+
+alter table data_request_bhc_firgrove_luv2.firgrove drop column firgrove;
+
+alter table data_request_bhc_firgrove_luv2.prcl_fir add column firgrove_id integer;
+
+update data_request_bhc_firgrove_luv2.prcl_fir set firgrove_id = firgrove;
