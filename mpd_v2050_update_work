@@ -1,0 +1,152 @@
+create database sandbox_mhs_mps;
+
+
+
+create table sandbox_mhs_mps.parcels
+select * from 2014_parcel_baseyear_core.parcels;
+
+create table sandbox_mhs_mps.buildings
+select * from 2014_parcel_baseyear_core.buildings;
+
+drop table sandbox_mhs_mps.mpd_parcels;
+
+create table sandbox_mhs_mps.mpd_parcels
+select parcel_id from sandbox_mhs_mps.parcels
+where parcel_id in (
+103706
+,167913
+,256304
+,476305
+,487257
+,651843
+,669139
+,672260
+,673573
+,716695
+,716728
+,716729
+,716778
+,716817
+,716851
+,718311
+,727330
+,732222
+,735356
+,735359
+,761895
+,789529
+,828888
+,829068
+,829202
+,829640
+,829995
+,886185
+,932521
+,965629
+,977773
+,1031435
+,1057296
+,1161386
+,1161556
+,1161563
+,1184739
+);
+
+select
+buildings.building_id
+,buildings.non_residential_sqft
+,buildings.job_capacity
+,buildings.parcel_id
+,buildings.land_area
+,buildings.improvement_value
+,buildings.year_built
+,buildings.stories
+,buildings.building_type_id
+,buildings.residential_units
+,mpd_parcels.parcel_id as parcels_parcel_id
+from buildings
+inner join mpd_parcels
+on buildings.parcel_id = mpd_parcels.parcel_id
+;
+
+SELECT * FROM 2014_parcel_baseyear_core.development_project_proposals d;
+
+SELECT * FROM 2014_parcel_baseyear_core.development_templates
+;
+where density_type = 'units_per_acre';
+
+SELECT * FROM 2014_parcel_baseyear_core.development_template_components;
+
+SELECT * FROM 2014_parcel_baseyear_core.building_types;
+
+SELECT * FROM psrc_parcel_working_mpds.buildings_out  order by parcel_id desc;
+SELECT * FROM psrc_parcel_working_mpds.buildings_test1 b;
+
+SELECT
+parcel_id
+,count(parcel_id) as freq
+FROM psrc_parcel_working_mpds.mpds_updated_sweverett_4_15_15_2941_records
+group by parcel_id
+order by freq desc;
+
+SELECT * FROM psrc_parcel_working_mpds.buildings_out b;
+
+select * from parcels where parcel_id = 110401;
+
+SELECT * FROM luv2_final_outputs_2014.parcels
+where parcel_id = 110401;
+
+SELECT * FROM luv1_final_outputs_2010.parcels
+where parcel_id = 110401;
+
+
+SELECT * FROM psrc_parcel_working_mpds.buildings_mpd_test_addon2 b;
+
+
+create table sandbox_mhs_mps.buildings_inputs
+(
+building_id integer not null
+,non_residential_sqft integer not null
+,year_built integer not null
+,parcel_id integer not null
+,job_capacity integer not null
+,land_area integer not null
+,building_quality_id integer not null
+,improvement_value integer not null
+,stories integer not null
+,tax_exempt integer not null
+,building_type_id integer not null
+,template_id integer not null
+,sqft_per_unit integer not null
+,residential_units integer not null
+,primary key (building_id)
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/new_mpds_input_blds.csv'
+INTO TABLE sandbox_mhs_mps.buildings_inputs
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+building_id
+,non_residential_sqft
+,year_built
+,parcel_id
+,job_capacity
+,land_area
+,building_quality_id
+,improvement_value
+,stories
+,tax_exempt
+,building_type_id
+,template_id
+,sqft_per_unit
+,residential_units
+);
+
+
+SELECT * FROM buildings_inputs b;
+
+
+SELECT * FROM buildings_output b;
