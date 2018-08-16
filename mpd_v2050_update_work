@@ -150,3 +150,84 @@ SELECT * FROM buildings_inputs b;
 
 
 SELECT * FROM buildings_output b;
+
+
+SELECT count(parcel_id) FROM sandbox_mhs_mps.buildings;
+
+
+create table existing_buildings_on_new_mpd_parcels
+select
+buildings.building_id
+,buildings.non_residential_sqft
+,buildings.year_built
+,buildings.parcel_id
+,buildings.job_capacity
+,buildings.land_area
+,buildings.improvement_value
+,buildings.stories
+,buildings.building_type_id
+,buildings.template_id
+,buildings.sqft_per_unit
+,buildings.residential_units
+from buildings
+inner join mpd_parcels
+on buildings.parcel_id = mpd_parcels.parcel_id
+order by buildings.parcel_id asc
+;
+
+select
+parcel_id
+,count(building_id) as records
+,min(year_built) as min_year
+,max(year_built) as max_year
+,sum(non_residential_sqft) as sqft
+,sum(job_capacity) as job_capacity
+,sum(residential_units) as res_units
+,sum(stories) as stories
+,sum(land_area) as land_area
+from existing_buildings_on_new_mpd_parcels
+group by parcel_id
+;
+
+SELECT * FROM sandbox_mhs_mps.buildings
+where parcel_id = 717272;
+
+SELECT * FROM buildings_output b;
+
+
+CREATE TABLE  2014_parcel_baseyear_core_working.development_project_proposals_updated_test
+ (
+  proposal_id int(11) NOT NULL AUTO_INCREMENT,
+  start_year int(11) DEFAULT NULL,
+  status_id int(11) DEFAULT NULL,
+  is_redevelopment int(11) DEFAULT NULL,
+  parcel_id int(11) DEFAULT NULL,
+  units_proposed int(11) DEFAULT NULL,
+  template_id int(11) DEFAULT NULL,
+  PRIMARY KEY (proposal_id)
+)
+;
+
+LOAD DATA LOCAL INFILE 'J:/Projects/UrbanSim/NEW_DIRECTORY/Inputs/base_year_cache/mpds/Updates_V2050_Work/updated_mpd_input_file.csv'
+INTO TABLE 2014_parcel_baseyear_core_working.development_project_proposals_updated_test
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+proposal_id
+,start_year
+,status_id
+,is_redevelopment
+,parcel_id
+,units_proposed
+,template_id
+);
+
+create table 2014_parcel_baseyear_core_working.development_project_proposals_updated_test_allyears_2016
+SELECT * FROM 2014_parcel_baseyear_core_working.development_project_proposals_updated_test d;
+
+update 2014_parcel_baseyear_core_working.development_project_proposals_updated_test_allyears_2016 set start_year = 2016;
+
+SELECT * FROM 2014_parcel_baseyear_core_working.development_project_proposals_updated_test_allyears_2016 d;
+
