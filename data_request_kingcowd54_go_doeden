@@ -1,0 +1,55 @@
+SELECT
+parcel_id
+,faz_id
+,x_coord_sp
+,y_coord_sp
+FROM luv2_final_outputs_2014.parcels where faz_id in
+(
+3046
+,3705
+,3706
+)
+;
+
+
+create database data_request_luv2_go_kingcowd54_doeden;
+
+CREATE TABLE  data_request_luv2_go_kingcowd54_doeden.parcels_in_study_area
+ (
+  parcel_id int(11) NOT NULL,
+  faz_id int(11) NOT NULL,
+  x_coord_sp int(11) NOT NULL,
+  y_coord_sp int(11) NOT NULL,
+  PRIMARY KEY (parcel_id)
+)
+;
+ LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/KingCo_WaterDis54_Gray_and_Osborne_Doeden_K/parcels_in_study_area.csv'
+INTO TABLE data_request_luv2_go_kingcowd54_doeden.parcels_in_study_area
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,faz_id
+,x_coord_sp
+,y_coord_sp
+);
+
+
+SELECT * FROM data_request_luv2_go_kingcowd54_doeden.parcels_in_study_area p;
+create table data_request_luv2_go_kingcowd54_doeden.parcels_with_study_area_col SELECT * FROM luv2_final_outputs_2014.parcels;
+
+alter table data_request_luv2_go_kingcowd54_doeden.parcels_with_study_area_col
+add column kingcowd54_id int;
+
+update data_request_luv2_go_kingcowd54_doeden.parcels_with_study_area_col
+set kingcowd54_id = 0;
+
+update data_request_luv2_go_kingcowd54_doeden.parcels_with_study_area_col p
+inner join data_request_luv2_go_kingcowd54_doeden.parcels_in_study_area s
+on p.parcel_id = s.parcel_id
+set p.kingcowd54_id = 1;
+
+
+SELECT * FROM data_request_luv2_go_kingcowd54_doeden.parcels_with_study_area_col limit 10;
