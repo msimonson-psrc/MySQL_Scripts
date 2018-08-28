@@ -1,0 +1,92 @@
+
+create table sandbox_mhs.parcels_in_tod_updated_20180828
+(
+parcel_id integer not null
+,tod_area5 integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/V2050/TOD4LUmod/updated_parcel_id_tod_area5_20180828.csv'
+INTO TABLE sandbox_mhs.parcels_in_tod_updated_20180828
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,tod_area5
+);
+
+
+drop table if exists sandbox_mhs.parcels;
+
+SELECT * FROM 2014_parcel_baseyear_core.parcels p;
+
+create table sandbox_mhs.parcels
+SELECT *
+FROM 2014_parcel_baseyear_core_archive.parcels_20180828;
+
+
+alter table sandbox_mhs.parcels add column tod_id_upd_20180828 integer;
+
+update sandbox_mhs.parcels set tod_id_upd_20180828 = 0;
+
+
+
+update sandbox_mhs.parcels p
+inner join sandbox_mhs.parcels_in_tod_updated_20180828 t
+on p.parcel_id = t.parcel_id
+set p.tod_id_upd_20180828 = t.tod_area5;
+
+select
+sandbox_mhs.parcels_in_tod_updated_20180828.tod_area5
+,count(sandbox_mhs.parcels_in_tod_updated_20180828.parcel_id)
+from sandbox_mhs.parcels_in_tod_updated_20180828
+group by sandbox_mhs.parcels_in_tod_updated_20180828.tod_area5;
+
+select
+#parcels.tod_id
+parcels.tod_id_upd_20180828
+,count(parcels.parcel_id) as parcels
+,sum(parcels.parcel_sqft)/43560 as acres
+,cities.rg_proposed
+from parcels
+inner join cities
+on parcels.city_id = cities.city_id
+group by
+tod_id_upd_20180828
+,rg_proposed
+;
+
+
+group by
+tod_id
+#tod_id_upd_20180828
+;
+
+drop table if exists sandbox_mhs.cities;
+
+create table sandbox_mhs.cities select * from 2014_parcel_baseyear_core.cities;
+
+
+
+
+
+select
+#parcels.tod_id
+parcels.tod_id_upd_20180828
+,count(parcels.parcel_id) as parcels
+,sum(parcels.parcel_sqft)/43560 as acres
+,cities.rg_proposed
+,cities.city_name
+,parcels.county_id
+from parcels
+inner join cities
+on parcels.city_id = cities.city_id
+where cities.rg_proposed in ('UU','CitiesTowns')
+and parcels.tod_id_upd_20180828>0
+group by
+tod_id_upd_20180828
+,rg_proposed
+,city_name
+;
