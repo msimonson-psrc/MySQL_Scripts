@@ -1,0 +1,34 @@
+SELECT
+sum(persons)
+FROM v2050_naa_outputs_2017.households;
+
+select count(person_id)
+FROM v2050_naa_outputs_2017.persons;
+
+alter table v2050_naa_outputs_2017.households add column parcel_id integer;
+
+update v2050_naa_outputs_2017.households set parcel_id = 0;
+
+update v2050_naa_outputs_2017.households inner join v2050_naa_outputs_2017.buildings
+on v2050_naa_outputs_2017.households.building_id = v2050_naa_outputs_2017.buildings.building_id
+set v2050_naa_outputs_2017.households.parcel_id = v2050_naa_outputs_2017.buildings.parcel_id;
+
+alter table v2050_naa_outputs_2017.households add index(parcel_id);
+
+select
+v2050_naa_outputs_2017.parcels.tod_id
+,sum(v2050_naa_outputs_2017.households.persons)
+
+from v2050_naa_outputs_2017.households
+inner join v2050_naa_outputs_2017.parcels
+on v2050_naa_outputs_2017.households.parcel_id = v2050_naa_outputs_2017.parcels.parcel_id
+group by tod_id;
+
+select
+v2050_naa_outputs_2017.parcels_orig_to_run.tod_id
+,sum(v2050_naa_outputs_2017.households.persons)
+
+from v2050_naa_outputs_2017.households
+inner join v2050_naa_outputs_2017.parcels_orig_to_run
+on v2050_naa_outputs_2017.households.parcel_id = v2050_naa_outputs_2017.parcels_orig_to_run.parcel_id
+group by tod_id;
