@@ -1,0 +1,137 @@
+reate table data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl
+(
+city_name text
+,parcel_id integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/hopelink_j_fredrickson_sept2018/snoqualmie_buffer_prcl.csv'
+INTO TABLE data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+city_name
+,parcel_id
+);
+
+create table data_request_hopelink_j_fredrickson.snoqualmie_prcl
+(
+city_name text
+,parcel_id integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/hopelink_j_fredrickson_sept2018/snoqualmie_prcl.csv'
+INTO TABLE data_request_hopelink_j_fredrickson.snoqualmie_prcl
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+city_name
+,parcel_id
+);
+
+
+
+alter table luv2_final_outputs_2014.households add column parcel_id integer;
+update luv2_final_outputs_2014.households set parcel_id = 0;
+alter table luv2_final_outputs_2014.households add index(building_id);
+update luv2_final_outputs_2014.households inner join luv2_final_outputs_2014.buildings
+on luv2_final_outputs_2014.households.building_id = luv2_final_outputs_2014.buildings.building_id
+set luv2_final_outputs_2014.households.parcel_id = luv2_final_outputs_2014.buildings.parcel_id;
+
+alter table luv2_final_outputs_2020.households add column parcel_id integer;
+update luv2_final_outputs_2020.households set parcel_id = 0;
+alter table luv2_final_outputs_2020.households add index(building_id);
+update luv2_final_outputs_2020.households inner join luv2_final_outputs_2020.buildings
+on luv2_final_outputs_2020.households.building_id = luv2_final_outputs_2020.buildings.building_id
+set luv2_final_outputs_2020.households.parcel_id = luv2_final_outputs_2020.buildings.parcel_id;
+
+alter table luv2_final_outputs_2025.households add column parcel_id integer;
+update luv2_final_outputs_2025.households set parcel_id = 0;
+alter table luv2_final_outputs_2025.households add index(building_id);
+update luv2_final_outputs_2025.households inner join luv2_final_outputs_2025.buildings
+on luv2_final_outputs_2025.households.building_id = luv2_final_outputs_2025.buildings.building_id
+set luv2_final_outputs_2025.households.parcel_id = luv2_final_outputs_2025.buildings.parcel_id;
+
+
+##  Not all geographies, just a template I kept re-using
+
+select
+count(parcel_id) from
+data_request_hopelink_j_fredrickson.snoqualmie_prcl;
+
+select
+count(luv2_final_outputs_2014.households.household_id) as households
+,sum(luv2_final_outputs_2014.households.persons) as persons
+from luv2_final_outputs_2014.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_prcl
+on luv2_final_outputs_2014.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2020.households.household_id) as households
+,sum(luv2_final_outputs_2020.households.persons) as persons
+from luv2_final_outputs_2020.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_prcl
+on luv2_final_outputs_2020.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2025.households.household_id) as households
+,sum(luv2_final_outputs_2025.households.persons) as persons
+from luv2_final_outputs_2025.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_prcl
+on luv2_final_outputs_2025.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_prcl.parcel_id;
+
+
+select
+count(parcel_id) from
+data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl;
+
+select
+count(luv2_final_outputs_2014.households.household_id) as households
+,sum(luv2_final_outputs_2014.households.persons) as persons
+from luv2_final_outputs_2014.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl
+on luv2_final_outputs_2014.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2020.households.household_id) as households
+,sum(luv2_final_outputs_2020.households.persons) as persons
+from luv2_final_outputs_2020.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl
+on luv2_final_outputs_2020.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2025.households.household_id) as households
+,sum(luv2_final_outputs_2025.households.persons) as persons
+from luv2_final_outputs_2025.households
+inner join data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl
+on luv2_final_outputs_2025.households.parcel_id = data_request_hopelink_j_fredrickson.snoqualmie_buffer_prcl.parcel_id;
+
+select
+count(parcel_id) from
+data_request_hopelink_j_fredrickson.carnation_prcl;
+
+select
+count(luv2_final_outputs_2014.households.household_id) as households
+,sum(luv2_final_outputs_2014.households.persons) as persons
+from luv2_final_outputs_2014.households
+inner join data_request_hopelink_j_fredrickson.carnation_prcl
+on luv2_final_outputs_2014.households.parcel_id = data_request_hopelink_j_fredrickson.carnation_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2020.households.household_id) as households
+,sum(luv2_final_outputs_2020.households.persons) as persons
+from luv2_final_outputs_2020.households
+inner join data_request_hopelink_j_fredrickson.carnation_prcl
+on luv2_final_outputs_2020.households.parcel_id = data_request_hopelink_j_fredrickson.carnation_prcl.parcel_id;
+
+select
+count(luv2_final_outputs_2025.households.household_id) as households
+,sum(luv2_final_outputs_2025.households.persons) as persons
+from luv2_final_outputs_2025.households
+inner join data_request_hopelink_j_fredrickson.carnation_prcl
+on luv2_final_outputs_2025.households.parcel_id = data_request_hopelink_j_fredrickson.carnation_prcl.parcel_id;
