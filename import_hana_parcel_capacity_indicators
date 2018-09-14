@@ -64,3 +64,19 @@ parcel_id
 ,plan_type_id
 ,census_tract_id
 );
+
+select
+city_id
+,sum(du_base)
+,sum(du_capacity)
+,sum(nonres_sqfeet_base)
+,sum(nonres_sqfeet_capacity)
+,sum(jobs_base)
+,sum(jobs_capacity)
+,sum(bldg_sqfeet_base)
+,sum(bldg_sqfeet_capacity)
+from v2050_parcel_capacity.capacity_indicator_parcel_20180911
+inner join v2050_parcel_capacity.parcels_geos_20180911
+on v2050_parcel_capacity.capacity_indicator_parcel_20180911.parcel_id = v2050_parcel_capacity.parcels_geos_20180911.parcel_id
+group by city_id;
+
