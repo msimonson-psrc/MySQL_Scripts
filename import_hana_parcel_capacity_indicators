@@ -1,0 +1,66 @@
+create database v2050_parcel_capacity;
+
+create table v2050_parcel_capacity.capacity_indicator_parcel_20180911
+(
+parcel_id integer not null
+,du_base float not null
+,du_capacity float not null
+,nonres_sqfeet_base float not null
+,nonres_sqfeet_capacity float not null
+,jobs_base float not null
+,jobs_capacity float not null
+,bldg_sqfeet_base float not null
+,bldg_sqfeet_capacity float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/V2050/SEIS/Data_Support/script_input/CapacityIndicatorPcl_res50.csv'
+INTO TABLE v2050_parcel_capacity.capacity_indicator_parcel_20180911
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,du_base
+,du_capacity
+,nonres_sqfeet_base
+,nonres_sqfeet_capacity
+,jobs_base
+,jobs_capacity
+,bldg_sqfeet_base
+,bldg_sqfeet_capacity
+);
+
+
+create table v2050_parcel_capacity.parcels_geos_20180911
+(
+parcel_id integer not null
+,growth_center_id integer not null
+,faz_id integer not null
+,city_id integer not null
+,county_id integer not null
+,tod_id integer not null
+,zone_id integer not null
+,plan_type_id integer not null
+,census_tract_id integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/V2050/SEIS/Data_Support/script_input/parcels_geos.csv'
+INTO TABLE v2050_parcel_capacity.parcels_geos_20180911
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,growth_center_id
+,faz_id
+,city_id
+,county_id
+,tod_id
+,zone_id
+,plan_type_id
+,census_tract_id
+);
