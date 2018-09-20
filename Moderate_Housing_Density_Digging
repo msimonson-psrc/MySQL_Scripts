@@ -1,0 +1,335 @@
+
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050
+set housing_type_mix_category = '1_zero'
+where maximum_dwelling_units_per_acre = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050
+set housing_type_mix_category = '2_low'
+where maximum_dwelling_units_per_acre between 0.000001 and 11.9999999;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050
+set housing_type_mix_category = '3_moderate'
+where maximum_dwelling_units_per_acre between 12 and 49.999999;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050
+set housing_type_mix_category = '4_high'
+where maximum_dwelling_units_per_acre >=50;
+
+
+
+create table v2050_stc_aws04_run3_20180817_int_final_2014.parcels
+select * from v2050_stc_aws04_run3_20180817_int_final_2014.parcels_orig_to_run
+;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels add primary key(parcel_id);
+
+
+drop table v2050_stc_aws04_run3_20180817_int_final_2050.parcels;
+
+create table v2050_stc_aws04_run3_20180817_int_final_2050.parcels
+select * from v2050_stc_aws04_run3_20180817_int_final_2050.parcels_orig_to_run
+;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2050.parcels add primary key(parcel_id);
+
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050 add column housing_type_mix_category text;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050 set housing_type_mix_category = 'not assigned';
+
+SELECT
+county_id
+,housing_type_mix_category
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(net_2014_residential_unit_capacity) as net_du_capacity_14
+,sum(net_2014_non_residential_sqft_capacity) as net_nonres_sqft_capacity_14
+,sum(households_14) as hh_14
+,sum(households_50) as hh_50
+,sum(households_50) - sum(households_14) as hh_chg_14_50
+,sum(persons_14) as hhpop_14
+,sum(persons_50) as hhpop_50
+,sum(persons_50) - sum(persons_14) as hhpop_chg_14_50
+,sum(jobs_14) as jobs_14
+,sum(jobs_50) as jobs_50
+,sum(jobs_50) - sum(jobs_14) as jobs_chg_14_50
+FROM parcels_with_built_2014_2050
+#where got_proposal_of_either_type = 1
+where had_development_event = 1
+group by county_id
+,housing_type_mix_category
+;
+
+select *
+FROM parcels_with_built_2014_2050
+where housing_type_mix_category = 'not assigned';
+
+
+SELECT * FROM 2014_parcel_baseyear_core.parcels where plan_type_id = 0;
+
+
+SELECT * FROM 2014_parcel_baseyear_core.development_constraints order by plan_type_id;
+
+
+
+SELECT
+count(parcel_id)
+FROM v2050_parcel_capacity.parcels_geos_20180911 p;
+
+
+
+SELECT
+count(parcel_id)
+FROM v2050_parcel_capacity.capacity_indicator_parcel_20180911 c;
+
+alter table v2050_parcel_capacity.capacity_indicator_parcel_20180911
+add column housing_type_mix_category text;
+
+update v2050_parcel_capacity.capacity_indicator_parcel_20180911
+set housing_type_mix_category = 'not assigned';
+
+update v2050_parcel_capacity.capacity_indicator_parcel_20180911
+inner join v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050
+on v2050_parcel_capacity.capacity_indicator_parcel_20180911.parcel_id = v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050.parcel_id
+set v2050_parcel_capacity.capacity_indicator_parcel_20180911.housing_type_mix_category = v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050.housing_type_mix_category;
+
+
+select
+housing_type_mix_category
+,sum(du_capacity-du_base)
+from v2050_parcel_capacity.capacity_indicator_parcel_20180911
+group by housing_type_mix_category;
+
+SELECT
+count(household_id)
+FROM v2050_stc_aws04_run3_20180817_int_final_2050.households h;
+
+create database v2050_tod_aws07_run9_20180830_working_2050;
+
+
+create table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+SELECT *
+FROM v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050;
+
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+add primary key(parcel_id);
+
+create table v2050_tod_aws07_run9_20180830_working_2050.parcels
+SELECT * FROM v2050_tod_aws07_run9_20180830_working_2050.parcels_mike;
+
+
+drop table if exists development_template_components;
+
+
+SELECT * FROM 2014_parcel_baseyear_core.readme r;
+
+
+
+alter table capacity_indicator_parcel_20180919
+add column adj_jobs_capacity integer,
+add column adj_du_capacity integer;
+
+update capacity_indicator_parcel_20180919
+set
+adj_du_capacity =du_capacity-du_base
+,adj_jobs_capacity = jobs_capacity-jobs_base
+;
+
+
+update capacity_indicator_parcel_20180919
+set adj_du_capacity = 0
+where jobs_capacity>jobs_base and du_capacity>1 and du_capacity=du_base;
+
+update capacity_indicator_parcel_20180919
+set adj_du_capacity = 0
+where jobs_capacity>jobs_base and du_capacity>1 and du_capacity<du_base;
+
+
+update capacity_indicator_parcel_20180919 set adj_du_capacity = 0 where adj_du_capacity < 0;
+update capacity_indicator_parcel_20180919 set adj_du_capacity = 0 where adj_du_capacity < 0;
+
+select * from capacity_indicator_parcel_20180919
+where jobs_capacity>jobs_base and du_capacity>1 and du_capacity<du_base;
+
+
+SELECT
+parcel_id
+,x_coord_sp
+,y_coord_sp
+FROM luv2_final_outputs_2014.parcels p;
+
+
+SELECT * FROM v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050 limit 10;
+
+SELECT * FROM capacity_indicator_parcel_20180919 where adj_du_capacity<0;
+SELECT * FROM capacity_indicator_parcel_20180919 where adj_jobs_capacity<0;
+
+create table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+select * from v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817 add primary key(parcel_id);
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+add column adj_du_capacity int
+,add column adj_jobs_capacity int;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+add column adj_du_capacity int
+,add column adj_jobs_capacity int;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+add column adj_du_capacity int
+,add column adj_jobs_capacity int;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+set adj_du_capacity = 0
+,adj_jobs_capacity = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+set adj_du_capacity = 0
+,adj_jobs_capacity = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+set adj_du_capacity = 0
+,adj_jobs_capacity = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+inner join v2050_parcel_capacity.capacity_indicator_parcel_20180919
+on v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817.parcel_id = v2050_parcel_capacity.capacity_indicator_parcel_20180919.parcel_id
+set v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817.adj_du_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_du_capacity
+,v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817.adj_jobs_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_jobs_capacity;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+inner join v2050_parcel_capacity.capacity_indicator_parcel_20180919
+on v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830.parcel_id = v2050_parcel_capacity.capacity_indicator_parcel_20180919.parcel_id
+set v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830.adj_du_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_du_capacity
+,v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830.adj_jobs_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_jobs_capacity;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+inner join v2050_parcel_capacity.capacity_indicator_parcel_20180919
+on v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817.parcel_id = v2050_parcel_capacity.capacity_indicator_parcel_20180919.parcel_id
+set v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817.adj_du_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_du_capacity
+,v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817.adj_jobs_capacity = v2050_parcel_capacity.capacity_indicator_parcel_20180919.adj_jobs_capacity;
+
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+add column hybrid_du_50 integer;
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+add column hybrid_du_50 integer;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+set hybrid_du_50 = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+set hybrid_du_50 = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_dug_aws03_run1_20180817
+set hybrid_du_50 = greatest(hu_50,households_50);
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_tod_aws07_run9_20180830
+set hybrid_du_50 = greatest(hu_50,households_50);
+
+
+alter table v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+add column hybrid_du_50 integer;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+set hybrid_du_50 = 0;
+
+update v2050_stc_aws04_run3_20180817_int_final_2014.parcels_with_built_2014_2050_stc_aws04_run3_20180817
+set hybrid_du_50 = greatest(hu_50,households_50);
+
+SELECT
+county_id
+#housing_type_mix_category
+,is_mixed_use
+#,count(parcel_id) as parcels
+#,sum(parcel_sqft)/43560 as acres
+#,sum(net_2014_residential_unit_capacity) as net_du_capacity_14
+,sum(adj_du_capacity) as adj_du_capacity
+#,sum(net_2014_non_residential_sqft_capacity) as net_nonres_sqft_capacity_14
+,sum(adj_jobs_capacity) as adj_jobs_capacity
+#,sum(hu_14) as hu_14
+#,sum(hu_50) as hu_50
+#,sum(hybrid_du_50) as hybrid_du_50
+,sum(hybrid_du_50) - sum(hu_14) as hybrid_hu_chg_14_50
+#,sum(households_14) as hh_14
+#,sum(households_50) as hh_50
+#,sum(households_50) - sum(households_14) as hh_chg_14_50
+#,sum(persons_14) as hhpop_14
+#,sum(persons_50) as hhpop_50
+#,sum(persons_50) - sum(persons_14) as hhpop_chg_14_50
+#,sum(jobs_14) as jobs_14
+#,sum(jobs_50) as jobs_50
+,sum(jobs_50) - sum(jobs_14) as jobs_chg_14_50
+#FROM parcels_with_built_2014_2050_stc_aws04_run3_20180817
+#FROM parcels_with_built_2014_2050_tod_aws07_run9_20180830
+FROM parcels_with_built_2014_2050_dug_aws03_run1_20180817
+#where got_proposal_of_either_type = 1
+where had_development_event = 0
+and
+#where housing_type_mix_category = '2_low'
+housing_type_mix_category = '3_moderate'
+#where housing_type_mix_category = '4_high'
+#where got_proposal_of_either_type = 1
+#where had_development_event = 1
+#where is_mixed_use = 'no'
+group by
+county_id
+#housing_type_mix_category
+,is_mixed_use
+order by
+is_mixed_use
+,county_id
+#, housing_type_mix_category
+;
+
+drop table parcels_with_built_2014_2050;
+drop table development_templates;
+drop table development_template_components;
+
+create table v2050_dug_aws03_run1_20180817_int_working_2050.parcels
+SELECT * FROM v2050_dug_aws03_run1_20180817_int_working_2050.parcels_orig_to_run p;
+
+alter table v2050_dug_aws03_run1_20180817_int_working_2050.parcels add primary key(parcel_id);
+
+SELECT
+sum(households_14) as hh_14
+,sum(households_50) as hh_50
+,sum(households_50) - sum(households_14) as hh_chg_14_50
+,sum(hu_14) as hu_14
+,sum(hu_50) as hu_50
+,sum(hybrid_du_50) as hybrid_du_50
+,sum(hybrid_du_50) - sum(hu_14) as hybrid_hu_chg_14_50
+FROM parcels_with_built_2014_2050_stc_aws04_run3_20180817
+#FROM parcels_with_built_2014_2050_tod_aws07_run9_20180830
+#FROM parcels_with_built_2014_2050_dug_aws03_run1_20180817
+;
+
+SELECT
+city_id
+,housing_type_mix_category
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(adj_du_capacity) as adj_du_capacity
+,sum(adj_jobs_capacity) as adj_jobs_capacity
+,sum(hu_50) - sum(hu_14) as hu_chg_14_50
+,sum(hybrid_du_50) - sum(hu_14) as hybrid_hu_chg_14_50
+,sum(jobs_50) - sum(jobs_14) as jobs_chg_14_50
+#FROM parcels_with_built_2014_2050_stc_aws04_run3_20180817
+FROM parcels_with_built_2014_2050_tod_aws07_run9_20180830
+#FROM parcels_with_built_2014_2050_dug_aws03_run1_20180817
+#where housing_type_mix_category = '1_zero'
+#where housing_type_mix_category = '2_low'
+#where housing_type_mix_category = '3_moderate'
+#where housing_type_mix_category = '4_high'
+group by
+city_id
+,housing_type_mix_category
+;
+
+
+SELECT * FROM 2014_parcel_baseyear_core.cities c;
