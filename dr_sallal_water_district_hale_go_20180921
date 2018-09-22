@@ -1,0 +1,88 @@
+create database data_request_luv2_go_sallal_wd_hale_20180921;
+
+create table data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+(
+FID integer
+,FID_1 integer
+,parcel_id integer not null
+,x_coord_sp integer
+,y_coord_sp integer
+,FID_2 integer
+,OBJECTID integer
+,zone_ integer
+,Shape_Leng float
+,Shape_Area float
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/Sallal_Water_Gray_Osborne_Hale_R_Sept2018/LUV2_parcels_SallalWD_joined.txt'
+INTO TABLE data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+FID
+,FID_1
+,parcel_id
+,x_coord_sp
+,y_coord_sp
+,FID_2
+,OBJECTID
+,zone_
+,Shape_Leng
+,Shape_Area
+);
+
+select
+zone_
+,count(parcel_id) as parcels
+from data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+group by zone_;
+
+alter table data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+drop column FID_2
+,drop column Shape_Leng
+,drop column Shape_Area
+;
+
+alter table data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+add column wd_zone_id integer;
+
+update data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+set wd_zone_id = zone_;
+
+alter table data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id add index (wd_zone_id);
+
+create table data_request_luv2_go_sallal_wd_hale_20180921.luv2_outputs_in_Sallal_WDs
+(
+record_id integer not null auto_increment
+,output_year integer not null
+,wd_zone_id integer not null
+,households integer
+,persons integer
+,primary key (record_id)
+);
+
+
+drop table data_request_luv2_go_sallal_wd_hale_20180921.temp
+;
+
+insert into data_request_luv2_go_sallal_wd_hale_20180921.luv2_outputs_in_Sallal_WDs
+(
+output_year
+,wd_zone_id
+,households
+,persons
+)
+select
+2040
+,data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id.wd_zone_id
+,count(luv2_final_outputs_2040.households.household_id) as households
+,sum(luv2_final_outputs_2040.households.persons) as persons
+from luv2_final_outputs_2040.households
+Inner Join data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id
+on luv2_final_outputs_2040.households.parcel_id=data_request_luv2_go_sallal_wd_hale_20180921.luv2_parcels_with_Sallal_WD_zone_id.parcel_id
+group by wd_zone_id;
+
+select * from data_request_luv2_go_sallal_wd_hale_20180921.luv2_outputs_in_Sallal_WDs;
