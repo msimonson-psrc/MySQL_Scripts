@@ -1,0 +1,86 @@
+alter table luv2_final_outputs_2014.jobs add column zone_id integer;
+alter table luv2_final_outputs_2014.jobs add index(building_id);
+
+update luv2_final_outputs_2014.jobs set zone_id =0;
+
+alter table luv2_final_outputs_2014.buildings add column zone_id integer;
+update luv2_final_outputs_2014.buildings set zone_id = 0;
+
+update luv2_final_outputs_2014.buildings inner join luv2_final_outputs_2014.parcels
+on buildings.parcel_id = parcels.parcel_id
+set buildings.zone_id = parcels.zone_id;
+
+update luv2_final_outputs_2014.jobs inner join luv2_final_outputs_2014.buildings
+on jobs.building_id = buildings.building_id
+set jobs.zone_id = buildings.zone_id;
+
+
+alter table luv2_final_outputs_2040.jobs add column zone_id integer;
+alter table luv2_final_outputs_2040.jobs add index(building_id);
+
+update luv2_final_outputs_2040.jobs set zone_id =0;
+
+alter table luv2_final_outputs_2040.buildings add column zone_id integer;
+update luv2_final_outputs_2040.buildings set zone_id = 0;
+
+update luv2_final_outputs_2040.buildings inner join luv2_final_outputs_2040.parcels
+on buildings.parcel_id = parcels.parcel_id
+set buildings.zone_id = parcels.zone_id;
+
+update luv2_final_outputs_2040.jobs inner join luv2_final_outputs_2040.buildings
+on jobs.building_id = buildings.building_id
+set jobs.zone_id = buildings.zone_id;
+
+
+alter table luv2_final_outputs_2040.households add column zone_id integer;
+alter table luv2_final_outputs_2040.households add index(building_id);
+
+update luv2_final_outputs_2040.households set zone_id =0;
+
+update luv2_final_outputs_2040.households inner join luv2_final_outputs_2040.buildings
+on households.building_id = buildings.building_id
+set households.zone_id = buildings.zone_id;
+
+#create database luv2_lodes_final_outputs_2014;
+#create database luv2_lodes_final_outputs_2040;
+
+create table luv2_lodes_final_outputs_2040.buildings
+select * from luv2_lodes_final_outputs_2014.buildings_40;
+
+create table luv2_lodes_final_outputs_2040.parcels
+select * from luv2_lodes_final_outputs_2014.parcels_40;
+
+create table luv2_lodes_final_outputs_2040.jobs
+select * from luv2_lodes_final_outputs_2014.jobs_40;
+
+create table luv2_lodes_final_outputs_2040.households
+select * from luv2_lodes_final_outputs_2014.households_40;
+
+#drop table if exists luv2_lodes_final_outputs_2014.buildings_40;
+#drop table if exists luv2_lodes_final_outputs_2014.parcels_40;
+#drop table if exists luv2_lodes_final_outputs_2014.jobs_40;
+#drop table if exists luv2_lodes_final_outputs_2014.households_40;
+
+##
+
+alter table luv2_lodes_final_outputs_2040.buildings add primary key(building_id), add index(parcel_id), add column zone_id integer;
+alter table luv2_lodes_final_outputs_2040.parcels add primary key(parcel_id);
+alter table luv2_lodes_final_outputs_2040.households add primary key(household_id), add index(building_id), add column zone_id integer;
+alter table luv2_lodes_final_outputs_2040.jobs add primary key(job_id), add index(building_id), add column zone_id integer;
+
+update luv2_lodes_final_outputs_2040.buildings set zone_id =0;
+update luv2_lodes_final_outputs_2040.households set zone_id = 0;
+update luv2_lodes_final_outputs_2040.jobs set zone_id=0;
+
+update luv2_lodes_final_outputs_2040.buildings inner join luv2_lodes_final_outputs_2040.parcels
+on luv2_lodes_final_outputs_2040.buildings.parcel_id = luv2_lodes_final_outputs_2040.parcels.parcel_id
+set luv2_lodes_final_outputs_2040.buildings.zone_id = luv2_lodes_final_outputs_2040.parcels.zone_id;
+
+update luv2_lodes_final_outputs_2040.households inner join luv2_lodes_final_outputs_2040.buildings
+on luv2_lodes_final_outputs_2040.households.building_id = luv2_lodes_final_outputs_2040.buildings.building_id
+set luv2_lodes_final_outputs_2040.households.zone_id = luv2_lodes_final_outputs_2040.buildings.zone_id;
+
+update luv2_lodes_final_outputs_2040.jobs inner join luv2_lodes_final_outputs_2040.buildings
+on luv2_lodes_final_outputs_2040.jobs.building_id = luv2_lodes_final_outputs_2040.buildings.building_id
+set luv2_lodes_final_outputs_2040.jobs.zone_id = luv2_lodes_final_outputs_2040.buildings.zone_id;
+
