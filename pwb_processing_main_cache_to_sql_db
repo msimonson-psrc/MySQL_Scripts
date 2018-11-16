@@ -1,0 +1,95 @@
+create database v2050_dseis_stc_run6_aws03_20181023_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.annual_employment_control_totals
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.annual_employment_control_totals_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.annual_household_control_totals
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.annual_household_control_totals_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.development_constraints
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_constraints_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.development_project_proposals
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_project_proposals_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.development_templates
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_templates_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.development_template_components
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_template_components_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.cities
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.cities_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.buildings
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.buildings_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.households
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.households_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.jobs
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.jobs_2014;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.parcels
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.parcels_2014;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.development_constraints add primary key(constraint_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.development_project_proposals add primary key(proposal_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.development_templates add primary key(template_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.development_template_components add primary key(component_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.cities add primary key(city_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.buildings add primary key(building_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.households add primary key(household_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.jobs add primary key(job_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.parcels add primary key(parcel_id);
+
+create database v2050_dseis_stc_run6_aws03_20181023_2015;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2015.development_project_proposals
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_project_proposals_2015;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2015.development_project_proposals add primary key(proposal_id);
+
+create database v2050_dseis_stc_run6_aws03_20181023_2017;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.development_project_proposals
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.development_project_proposals_2017;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.buildings
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.buildings_2017;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.households
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.households_2017;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.jobs
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.jobs_2017;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.parcels
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.parcels_2017;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.development_project_proposals add primary key(proposal_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.buildings add primary key(building_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.households add primary key(household_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.jobs add primary key(job_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.parcels add primary key(parcel_id);
+
+create database v2050_dseis_stc_run6_aws03_20181023_2050;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.buildings
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.buildings_2050;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.households
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.households_2050;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.jobs
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.jobs_2050;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.parcels
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023.parcels_2050;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.buildings add primary key(building_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.households add primary key(household_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.jobs add primary key(job_id);
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.parcels add primary key(parcel_id);
+
+drop database v2050_dseis_stc_run6_aws03_20181023;
