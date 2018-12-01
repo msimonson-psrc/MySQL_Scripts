@@ -1,0 +1,166 @@
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+SELECT
+parcel_id
+,city_id
+,tod_id
+,park_buffer_id
+,parcel_sqft
+FROM v2050_dseis_stc_run6_aws03_20181023_2014.parcels;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+add primary key(parcel_id)
+,add column du_capacity int
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+set du_capacity=0;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_parcel_capacity.capacity_indicator_parcel_20181008 c
+on p.parcel_id = c.parcel_id
+set p.du_capacity = c.du_capacity-c.du_base;
+
+
+create table v2050_dseis_stc_run6_aws03_20181023_2015.parcels_with_proposals
+SELECT
+parcel_id
+FROM v2050_dseis_stc_run6_aws03_20181023_2015.development_project_proposals
+group by parcel_id;
+
+
+select
+city_id
+,park_buffer_id
+,tod_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(du_capacity) as du_capacity
+from v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+group by
+city_id
+,park_buffer_id
+,tod_id
+;
+
+
+
+select
+city_id
+,park_buffer_id
+,tod_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(du_capacity) as du_capacity
+from v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+where du_capacity>0
+group by
+city_id
+,park_buffer_id
+,tod_id
+;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.du_by_parcel_2050
+SELECT
+parcel_id
+,sum(residential_units) as du
+FROM v2050_dseis_stc_run6_aws03_20181023_2050.buildings
+group by parcel_id;
+
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.du_by_parcel_2050
+add primary key(parcel_id);
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.du_by_parcel_2014
+SELECT
+parcel_id
+,sum(residential_units) as du
+FROM v2050_dseis_stc_run6_aws03_20181023_2014.buildings
+group by parcel_id;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.du_by_parcel_2014
+add primary key(parcel_id);
+
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+add column du_2014 int
+,add column du_2050_stc int
+,add column du_2050_tfg int
+,add column du_2050_rug int
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+set du_2014=0
+,du_2050_stc=0
+,du_2050_tfg=0
+,du_2050_rug=0
+;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2014.du_by_parcel_2014 d
+on p.parcel_id = d.parcel_id
+set p.du_2014 = d.du;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2050.du_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.du_2050_stc = d.du;
+
+###
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.du_by_parcel_2050
+SELECT
+parcel_id
+,sum(residential_units) as du
+FROM v2050_dseis_tfg_run8_aws05_20181029_2050.buildings
+group by parcel_id;
+
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.du_by_parcel_2050
+add primary key(parcel_id);
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.du_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.du_2050_tfg = d.du;
+
+###
+
+create table v2050_dseis_rug_run5_aws04_20181025_2050.du_by_parcel_2050
+SELECT
+parcel_id
+,sum(residential_units) as du
+FROM v2050_dseis_rug_run5_aws04_20181025_2050.buildings
+group by parcel_id;
+
+alter table v2050_dseis_rug_run5_aws04_20181025_2050.du_by_parcel_2050
+add primary key(parcel_id);
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.du_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.du_2050_rug = d.du;
+
+###
+
+select
+city_id
+,park_buffer_id
+,tod_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(du_capacity) as du_capacity
+,sum(du_2014) as du_2014
+,sum(du_2050_stc) as du_2050_stc
+,sum(du_2050_tfg) as du_2050_tfg
+,sum(du_2050_rug) as du_2050_rug
+from v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+where du_capacity>0
+group by
+city_id
+,park_buffer_id
+,tod_id
+;
+
