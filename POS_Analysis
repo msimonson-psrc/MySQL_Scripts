@@ -164,3 +164,248 @@ city_id
 ,tod_id
 ;
 
+## Park 2 adding Pop and HH to the analysis
+
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+add column hh_2014 int
+,add column hh_2050_stc int
+,add column hh_2050_tfg int
+,add column hh_2050_rug int
+,add column pop_2014 int
+,add column pop_2050_stc int
+,add column pop_2050_tfg int
+,add column pop_2050_rug int
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+set hh_2014=0
+,hh_2050_stc=0
+,hh_2050_tfg=0
+,hh_2050_rug=0
+,pop_2014=0
+,pop_2050_stc=0
+,pop_2050_tfg=0
+,pop_2050_rug=0
+;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.households
+add column parcel_id int
+,add index(building_id);
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2050.households
+add column parcel_id int
+,add index(building_id);
+
+alter table v2050_dseis_rug_run5_aws04_20181025_2050.households
+add column parcel_id int
+,add index(building_id);
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.households
+add column parcel_id int
+,add index(building_id);
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.households h
+inner join v2050_dseis_stc_run6_aws03_20181023_2014.buildings b
+on h.building_id = b.building_id
+set h.parcel_id = b.parcel_id;
+
+update v2050_dseis_stc_run6_aws03_20181023_2050.households h
+inner join v2050_dseis_stc_run6_aws03_20181023_2050.buildings b
+on h.building_id = b.building_id
+set h.parcel_id = b.parcel_id;
+
+update v2050_dseis_rug_run5_aws04_20181025_2050.households h
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.buildings b
+on h.building_id = b.building_id
+set h.parcel_id = b.parcel_id;
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.households h
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.buildings b
+on h.building_id = b.building_id
+set h.parcel_id = b.parcel_id;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2014.hh_pop_by_parcel_2014
+SELECT
+parcel_id
+,count(household_id) as hh
+,sum(persons) as pop
+FROM v2050_dseis_stc_run6_aws03_20181023_2014.households
+group by parcel_id;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2050.hh_pop_by_parcel_2050
+SELECT
+parcel_id
+,count(household_id) as hh
+,sum(persons) as pop
+FROM v2050_dseis_stc_run6_aws03_20181023_2050.households
+group by parcel_id;
+
+create table v2050_dseis_rug_run5_aws04_20181025_2050.hh_pop_by_parcel_2050
+SELECT
+parcel_id
+,count(household_id) as hh
+,sum(persons) as pop
+FROM v2050_dseis_rug_run5_aws04_20181025_2050.households
+group by parcel_id;
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050
+SELECT
+parcel_id
+,count(household_id) as hh
+,sum(persons) as pop
+FROM v2050_dseis_tfg_run8_aws05_20181029_2050.households
+group by parcel_id;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2014.hh_pop_by_parcel_2014 d
+on p.parcel_id = d.parcel_id
+set p.hh_2014 = d.hh
+,p.pop_2014 = d.pop
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2050.hh_pop_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.hh_2050_stc = d.hh
+,p.pop_2050_stc=d.pop
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.hh_pop_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.hh_2050_rug = d.hh
+,p.pop_2050_rug = d.pop
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050 d
+on p.parcel_id = d.parcel_id
+set p.hh_2050_tfg = d.hh
+,p.pop_2050_tfg = d.pop
+;
+
+
+
+select
+city_id
+,park_buffer_id
+,tod_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(du_capacity) as du_capacity
+,sum(du_2014) as du_2014
+,sum(du_2050_stc) as du_2050_stc
+,sum(du_2050_tfg) as du_2050_tfg
+,sum(du_2050_rug) as du_2050_rug
+,sum(hh_2014) as hh_2014
+,sum(hh_2050_stc) as hh_2050_stc
+,sum(hh_2050_tfg) as hh_2050_tfg
+,sum(hh_2050_rug) as hh_2050_rug
+,sum(pop_2014) as pop_2014
+,sum(pop_2050_stc) as pop_2050_stc
+,sum(pop_2050_tfg) as pop_2050_tfg
+,sum(pop_2050_rug) as pop_2050_rug
+from v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+where du_capacity>0
+group by
+city_id
+,park_buffer_id
+,tod_id
+;
+
+
+SELECT
+city_id
+,count(parcel_id)
+FROM pos_tod_extract_parcels
+group by city_id
+;
+
+## Part 3 Adding 2017 data to the analysis
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+add column du_2017 int
+,add column hh_2017 int
+,add column pop_2017 int
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+set
+du_2017 = 0
+,hh_2017 =0
+,pop_2017 =0
+;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.households
+add column parcel_id int
+,add index(building_id);
+
+update v2050_dseis_stc_run6_aws03_20181023_2017.households h
+inner join v2050_dseis_stc_run6_aws03_20181023_2017.buildings b
+on h.building_id = b.building_id
+set h.parcel_id = b.parcel_id;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017
+SELECT
+parcel_id
+,count(household_id) as hh
+,sum(persons) as pop
+FROM v2050_dseis_stc_run6_aws03_20181023_2017.households
+group by parcel_id;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017 d
+on p.parcel_id = d.parcel_id
+set p.hh_2017 = d.hh
+,p.pop_2017 = d.pop
+;
+
+
+create table v2050_dseis_stc_run6_aws03_20181023_2017.du_by_parcel_2017
+SELECT
+parcel_id
+,sum(residential_units) as du
+FROM v2050_dseis_stc_run6_aws03_20181023_2017.buildings
+group by parcel_id;
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2017.du_by_parcel_2017
+add primary key(parcel_id);
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels p
+inner join v2050_dseis_stc_run6_aws03_20181023_2017.du_by_parcel_2017 d
+on p.parcel_id = d.parcel_id
+set p.du_2017 = d.du;
+
+SELECT * FROM pos_tod_extract_parcels limit 10;
+
+select
+city_id
+,park_buffer_id
+,tod_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+,sum(du_capacity) as du_capacity
+#,sum(du_2014) as du_2014
+,sum(du_2017) as du_2017
+,sum(du_2050_stc) as du_2050_stc
+,sum(du_2050_tfg) as du_2050_tfg
+,sum(du_2050_rug) as du_2050_rug
+#,sum(hh_2014) as hh_2014
+,sum(hh_2017) as hh_2017
+,sum(hh_2050_stc) as hh_2050_stc
+,sum(hh_2050_tfg) as hh_2050_tfg
+,sum(hh_2050_rug) as hh_2050_rug
+#,sum(pop_2014) as pop_2014
+,sum(pop_2017) as pop_2017
+,sum(pop_2050_stc) as pop_2050_stc
+,sum(pop_2050_tfg) as pop_2050_tfg
+,sum(pop_2050_rug) as pop_2050_rug
+from v2050_dseis_stc_run6_aws03_20181023_2014.pos_tod_extract_parcels
+#where du_capacity>0
+group by
+city_id
+,park_buffer_id
+,tod_id
+;
+
