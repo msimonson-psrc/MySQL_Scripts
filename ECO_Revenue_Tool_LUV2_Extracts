@@ -1,0 +1,398 @@
+## 2014
+
+create table data_request_eco_revenue_tool.res_ptba_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2014.households.household_id) as households
+,sum(luv2_final_outputs_2014.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2014.households.household_id) as households
+,sum(luv2_final_outputs_2014.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.jobs.parcel_id
+WHERE luv2_final_outputs_2014.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2014
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2014.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2014.jobs.parcel_id
+WHERE luv2_final_outputs_2014.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
+
+
+## 2020
+
+create table data_request_eco_revenue_tool.res_ptba_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2020.households.household_id) as households
+,sum(luv2_final_outputs_2020.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2020.households.household_id) as households
+,sum(luv2_final_outputs_2020.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.jobs.parcel_id
+WHERE luv2_final_outputs_2020.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2020
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2020.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2020.jobs.parcel_id
+WHERE luv2_final_outputs_2020.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
+
+
+## 2025
+
+create table data_request_eco_revenue_tool.res_ptba_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2025.households.household_id) as households
+,sum(luv2_final_outputs_2025.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2025.households.household_id) as households
+,sum(luv2_final_outputs_2025.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.jobs.parcel_id
+WHERE luv2_final_outputs_2025.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2025
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2025.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2025.jobs.parcel_id
+WHERE luv2_final_outputs_2025.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
+
+## 2030
+
+create table data_request_eco_revenue_tool.res_ptba_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2030.households.household_id) as households
+,sum(luv2_final_outputs_2030.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2030.households.household_id) as households
+,sum(luv2_final_outputs_2030.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.jobs.parcel_id
+WHERE luv2_final_outputs_2030.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2030
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2030.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2030.jobs.parcel_id
+WHERE luv2_final_outputs_2030.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
+
+
+## 2035
+
+create table data_request_eco_revenue_tool.res_ptba_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2035.households.household_id) as households
+,sum(luv2_final_outputs_2035.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2035.households.household_id) as households
+,sum(luv2_final_outputs_2035.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.jobs.parcel_id
+WHERE luv2_final_outputs_2035.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2035
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2035.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2035.jobs.parcel_id
+WHERE luv2_final_outputs_2035.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
+
+## 2040
+
+create table data_request_eco_revenue_tool.res_ptba_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2040.households.household_id) as households
+,sum(luv2_final_outputs_2040.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.res_st_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2040.households.household_id) as households
+,sum(luv2_final_outputs_2040.households.persons) as persons
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.households
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.emp_ptba_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.emp_st_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool.retemp_ptba_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.PTBA_NAME
+,count(luv2_final_outputs_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.jobs.parcel_id
+WHERE luv2_final_outputs_2040.jobs.sector_id in (7,14)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool.retemp_st_2040
+SELECT
+data_request_eco_revenue_tool.luv2_parcels_ptba_st.ST_DIST
+,count(luv2_final_outputs_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool.luv2_parcels_ptba_st
+inner join luv2_final_outputs_2040.jobs
+on data_request_eco_revenue_tool.luv2_parcels_ptba_st.parcel_id = luv2_final_outputs_2040.jobs.parcel_id
+WHERE luv2_final_outputs_2040.jobs.sector_id in (7,14)
+GROUP BY
+ST_DIST;
