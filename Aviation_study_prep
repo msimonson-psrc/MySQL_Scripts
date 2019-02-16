@@ -1,0 +1,103 @@
+select count(parcel_id) from v2050_dseis_rug_run5_aws04_20181025_2050.parcels;
+select count(parcel_id) from v2050_dseis_tfg_run8_aws05_20181029_2050.parcels;
+
+
+alter table v2050_dseis_rug_run5_aws04_20181025_2050.jobs add column parcel_id int;
+
+update v2050_dseis_rug_run5_aws04_20181025_2050.jobs set parcel_id = 0;
+
+
+
+update v2050_dseis_rug_run5_aws04_20181025_2050.jobs
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.buildings
+on v2050_dseis_rug_run5_aws04_20181025_2050.jobs.building_id = v2050_dseis_rug_run5_aws04_20181025_2050.buildings.building_id
+set v2050_dseis_rug_run5_aws04_20181025_2050.jobs.parcel_id = v2050_dseis_rug_run5_aws04_20181025_2050.buildings.parcel_id;
+
+create table v2050_dseis_rug_run5_aws04_20181025_2050.jobs_by_parcel_2050
+select
+parcel_id
+,count(job_id) as jobs
+from v2050_dseis_rug_run5_aws04_20181025_2050.jobs
+group by parcel_id;
+
+alter table v2050_dseis_rug_run5_aws04_20181025_2050.jobs_by_parcel_2050
+add primary key(parcel_id);
+
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.jobs j;
+
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.jobs add column parcel_id int;
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.jobs set parcel_id = 0;
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.jobs
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.buildings
+on v2050_dseis_tfg_run8_aws05_20181029_2050.jobs.building_id = v2050_dseis_tfg_run8_aws05_20181029_2050.buildings.building_id
+set v2050_dseis_tfg_run8_aws05_20181029_2050.jobs.parcel_id = v2050_dseis_tfg_run8_aws05_20181029_2050.buildings.parcel_id;
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.jobs_by_parcel_2050
+select
+parcel_id
+,count(job_id) as jobs
+from v2050_dseis_tfg_run8_aws05_20181029_2050.jobs
+group by parcel_id;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.jobs_by_parcel_2050
+add primary key(parcel_id);
+
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+SELECT
+parcel_id
+,x_coord_sp
+,y_coord_sp
+FROM v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_orig_to_run;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+add column tfg_hhpop_2050 int
+,add column tfg_jobs_2050 int
+,add column rug_hhpop_2050 int
+,add column rug_jobs_2050 int
+;
+
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+set tfg_hhpop_2050 = 0
+,tfg_jobs_2050 =0
+,rug_hhpop_2050 =0
+,rug_jobs_2050 =0
+;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+add primary key(parcel_id);
+
+
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.jobs_by_parcel_2050
+ON v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.parcel_id = v2050_dseis_tfg_run8_aws05_20181029_2050.jobs_by_parcel_2050.parcel_id
+set v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.tfg_jobs_2050 = v2050_dseis_tfg_run8_aws05_20181029_2050.jobs_by_parcel_2050.jobs
+;
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+inner join v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050
+ON v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.parcel_id = v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050.parcel_id
+set v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.tfg_hhpop_2050 = v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050.pop
+;
+
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.jobs_by_parcel_2050
+ON v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.parcel_id = v2050_dseis_rug_run5_aws04_20181025_2050.jobs_by_parcel_2050.parcel_id
+set v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.rug_jobs_2050 = v2050_dseis_rug_run5_aws04_20181025_2050.jobs_by_parcel_2050.jobs
+;
+
+update v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050
+inner join v2050_dseis_rug_run5_aws04_20181025_2050.hh_pop_by_parcel_2050
+ON v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.parcel_id = v2050_dseis_rug_run5_aws04_20181025_2050.hh_pop_by_parcel_2050.parcel_id
+set v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050.rug_hhpop_2050 = v2050_dseis_rug_run5_aws04_20181025_2050.hh_pop_by_parcel_2050.pop
+;
+
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.parcels_aviation_2050 order by rug_hhpop_2050 desc limit 50;
