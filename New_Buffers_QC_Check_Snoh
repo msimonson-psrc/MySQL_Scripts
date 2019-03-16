@@ -1,0 +1,125 @@
+SELECT *
+FROM no_action_input_changes_pmc.parcels_tod_crow_flies
+limit 10
+;
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_list
+(
+col integer not null
+,object_id integer not null
+,object_id_left integer not null
+,object_id_right integer not null
+,parcel_id integer not null
+,brt integer not null
+,bus integer not null
+,commuter_rail integer not null
+,express_bus integer not null
+,ferry integer not null
+,id_what integer not null
+,index_right integer not null
+,light_rail integer not null
+,passenger_ferry integer not null
+,uga integer not null
+,urban_center integer not null
+,x float not null
+,y float not null
+#,primary key (proposal_id)
+);
+
+LOAD DATA LOCAL INFILE 'W:/gis/projects/transit_areas/buffer_outputs/buffer_parcels.csv'
+INTO TABLE v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_list
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+col
+,object_id
+,object_id_left
+,object_id_right
+,parcel_id
+,brt
+,bus
+,commuter_rail
+,express_bus
+,ferry
+,id_what
+,index_right
+,light_rail
+,passenger_ferry
+,uga
+,urban_center
+,x
+,y
+);
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_list
+where object_id_left in (
+460,
+461,
+1,
+234,
+124,
+576,
+1369,
+797
+)
+order by parcel_id asc
+;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville add index(parcel_id);
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_unique
+select parcel_id from v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville
+group by parcel_id;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_unique add primary key(parcel_id);
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050 v
+Right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_unique m
+on v.parcel_id = m.parcel_id;
+
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017 v
+right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_unique m
+on v.parcel_id = m.parcel_id;
+
+
+
+#drop table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_797;
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_797
+select parcel_id from v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville
+where object_id_left = 797;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_797
+add primary key(parcel_id);
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050 v
+Right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_797 m
+on v.parcel_id = m.parcel_id;
+
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017 v
+right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_797 m
+on v.parcel_id = m.parcel_id;
+
+create table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_netdist_marysville_unique
+SELECT parcel_id FROM v2050_dseis_tfg_run8_aws05_20181029_2050.parcels
+where city_id = 106 and tod_id = 1;
+
+alter table v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_netdist_marysville_unique add primary key(parcel_id);
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.hh_pop_by_parcel_2050 v
+Right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_netdist_marysville_unique m
+on v.parcel_id = m.parcel_id;
+
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017 v
+right join v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_netdist_marysville_unique m
+on v.parcel_id = m.parcel_id;
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.parcels where parcel_id = 50013;
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.buildings where parcel_id = 26214;
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.households where building_id = 1290131;
+
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_netdist_marysville_unique b;
+SELECT * FROM v2050_dseis_tfg_run8_aws05_20181029_2050.buffer_parcels_crowflies_marysville_unique b;
