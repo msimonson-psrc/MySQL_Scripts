@@ -1,0 +1,15 @@
+SELECT
+no_action_input_changes_pmc.parcels.parcel_id
+,no_action_input_changes_pmc.parcels.parcel_sqft
+,no_action_input_changes_pmc.parcels.growth_center_id
+,no_action_input_changes_pmc.parcels.faz_id
+,no_action_input_changes_pmc.parcels_king_paa.city_id
+,no_action_input_changes_pmc.parcels.county_id
+,no_action_input_changes_pmc.parcels.tod_id
+,no_action_input_changes_pmc.parcels.zone_id
+,no_action_input_changes_pmc.parcels.plan_type_id
+,no_action_input_changes_pmc.parcels.census_tract_id
+FROM no_action_input_changes_pmc.parcels
+inner join no_action_input_changes_pmc.parcels_king_paa
+on no_action_input_changes_pmc.parcels.parcel_id = no_action_input_changes_pmc.parcels_king_paa.parcel_id
+;
