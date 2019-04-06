@@ -1,0 +1,307 @@
+create table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+SELECT
+parcel_id,
+tod_id,
+gross_sqft,
+parcel_sqft,
+plan_type_id
+FROM 2014_parcel_baseyear_core.parcels
+;
+
+alter table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs add primary key(parcel_id);
+
+alter table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs add column city_id_w6paa integer;
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs set city_id_w6paa=0;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs c
+inner join no_action_input_changes_pmc.parcels_king_paa p
+on c.parcel_id = p.parcel_id
+set c.city_id_w6paa = p.city_id;
+
+
+select
+v2050_parcel_capacity.parcels_capacity_crow_flies_inputs.plan_type_id
+,count(v2050_parcel_capacity.parcels_capacity_crow_flies_inputs.parcel_id) as parcels
+,sum(v2050_parcel_capacity.parcels_capacity_crow_flies_inputs.parcel_sqft)/43560 as acres
+#v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+from v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+Left join sandbox_mhs.parcel_capacities
+on v2050_parcel_capacity.parcels_capacity_crow_flies_inputs.parcel_id = sandbox_mhs.parcel_capacities.parcel_id
+where sandbox_mhs.parcel_capacities.parcel_id is NULL
+group by plan_type_id;
+order by plan_type_id, parcel_sqft;
+
+
+SELECT * FROM 2014_parcel_baseyear_core.development_constraints where plan_type_id>699;
+
+SELECT count(parcel_id) FROM parcels_with_built_2014_2050;
+Select count(parcel_id) from v2050_parcel_capacity.parcels_capacity_crow_flies_inputs;
+
+Select * from v2050_parcel_capacity.parcels_capacity_crow_flies_inputs limit 10;
+
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 limit 10;
+
+alter table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+add column lutid_stc integer
+,add column maximum_dwelling_units_per_acre float
+,add column maximum_far float
+,add column is_mixed_use char(10)
+,add column parcel_is_locked_out integer
+,add column got_vacant_land_proposal integer
+,add column got_redevelopment_proposal integer
+,add column got_proposal_of_either_type integer
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set
+lutid_stc = 0
+,maximum_dwelling_units_per_acre =0
+,maximum_far =0
+,is_mixed_use ='na'
+,parcel_is_locked_out =0
+,got_vacant_land_proposal =0
+,got_redevelopment_proposal =0
+,got_proposal_of_either_type =0
+;
+
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs c
+inner join v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+on c.parcel_id = p.parcel_id
+set
+c.lutid_stc = p.land_use_type_id
+,c.maximum_dwelling_units_per_acre = p.maximum_dwelling_units_per_acre
+,c.maximum_far = p.maximum_far
+,c.is_mixed_use = p.is_mixed_use
+,c.parcel_is_locked_out = p.parcel_is_locked_out
+,c.got_vacant_land_proposal = p.got_vacant_land_proposal
+,c.got_redevelopment_proposal = p.got_redevelopment_proposal
+,c.got_proposal_of_either_type = p.got_proposal_of_either_type
+;
+
+
+alter table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+add column DUbase double
+,add column JOBSPbase double
+,add column DUcapacity50 double
+,add column JOBSPcapacity50 double
+,add column DUdiff50 double
+,add column JOBSPdiff50 double
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set
+DUbase =0
+,JOBSPbase =0
+,DUcapacity50 =0
+,JOBSPcapacity50 =0
+,DUdiff50 =0
+,JOBSPdiff50 =0
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs c
+inner join sandbox_mhs.parcel_capacities s
+on c.parcel_id = s.parcel_id
+set
+c.DUbase = s.DUbase
+,c.JOBSPbase = s.JOBSPbase
+,c.DUcapacity50 = s.DUcapacity50
+,c.JOBSPcapacity50 = s.JOBSPcapacity50
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set
+DUdiff50 = DUcapacity50 - DUbase
+,JOBSPdiff50 = JOBSPcapacity50-JOBSPbase
+;
+
+
+select * from v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+where city_id_w6paa = 9
+limit 1000;
+
+alter table v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+add column v2050_resdens_cat char(30);
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set v2050_resdens_cat = 'none';
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set v2050_resdens_cat = 'low'
+where
+maximum_dwelling_units_per_acre > 0
+and
+maximum_dwelling_units_per_acre < 12
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set v2050_resdens_cat = 'med'
+where
+maximum_dwelling_units_per_acre >= 12
+and
+maximum_dwelling_units_per_acre < 50
+;
+
+update v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+set v2050_resdens_cat = 'high'
+where
+maximum_dwelling_units_per_acre >= 50
+;
+
+select
+city_id_w6paa
+,tod_id
+#,is_mixed_use
+,count(parcel_id) as parcels
+,sum(gross_sqft)/43560 as gross_acres
+,sum(parcel_sqft)/43560 as net_acres
+from v2050_parcel_capacity.parcels_capacity_crow_flies_inputs
+where is_mixed_use = 'no'
+and v2050_resdens_cat = 'none'
+group by
+city_id_w6paa
+,tod_id
+#,is_mixed_use
+;
+
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2050.buildings b;
+
+
+
+create database v2050_dseis_stc_run6_aws03_20181023_2025;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2025.parcels
+select * from v2050_dseis_stc_run6_asw03_20181023_2025.parcels;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2025.households
+select * from v2050_dseis_stc_run6_asw03_20181023_2025.households;
+
+create table v2050_dseis_stc_run6_aws03_20181023_2025.buildings
+select * from v2050_dseis_stc_run6_asw03_20181023_2025.buildings;
+
+
+create table v2050_dseis_stc_run6_aws03_20181023_2025.jobs
+select * from v2050_dseis_stc_run6_asw03_20181023_2025.jobs;
+
+
+drop table parcels;
+drop table buildings;
+drop table households;
+drop table jobs;
+
+drop database v2050_dseis_stc_run6_asw03_20181023_2025;
+
+alter table households add column parcel_id integer;
+alter table jobs add column parcel_id integer;
+
+alter table households add index(building_id);
+alter table jobs add index(building_id);
+
+update households set parcel_id = 0;
+update jobs set parcel_id = 0;
+
+update households
+inner join buildings
+on households.building_id = buildings.building_id
+set households.parcel_id = buildings.parcel_id;
+
+update jobs
+inner join buildings
+on jobs.building_id = buildings.building_id
+set jobs.parcel_id = buildings.parcel_id;
+
+create table hh_pop_by_parcel_2025
+select
+parcel_id
+,count(household_id) as households
+,sum(persons) as persons
+from households
+group by parcel_id;
+
+alter table hh_pop_by_parcel_2025 add primary key(parcel_id);
+
+create table jobs_by_parcel_2025
+select
+parcel_id
+,count(job_id) as jobs
+from jobs
+group by parcel_id;
+
+alter table jobs_by_parcel_2025 add primary key(parcel_id);
+
+create table jobs_by_parcel_2017
+select
+parcel_id
+,count(job_id) as jobs
+from jobs
+group by parcel_id;
+
+alter table jobs_by_parcel_2017 add primary key(parcel_id);
+
+
+alter table v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050
+add column pop_2017 integer
+,add column pop_2025 integer
+,add column jobs_2017 integer
+,add column jobs_2025 integer
+,add column city_id_w6paa integer
+,add column tod_id_crow_flies integer
+;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050
+set pop_2017 = 0
+,pop_2025 = 0
+,jobs_2017 = 0
+,jobs_2025 = 0
+,city_id_w6paa = 0
+,tod_id_crow_flies = 0
+;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+inner join v2050_parcel_capacity.parcels_capacity_crow_flies_inputs c
+on p.parcel_id = c.parcel_id
+set p.city_id_w6paa = c.city_id_w6paa
+,p.tod_id_crow_flies = c.tod_id;
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+inner join v2050_dseis_stc_run6_aws03_20181023_2017.hh_pop_by_parcel_2017 c
+on p.parcel_id = c.parcel_id
+set p.pop_2017 = c.pop
+;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+inner join v2050_dseis_stc_run6_aws03_20181023_2025.hh_pop_by_parcel_2025 c
+on p.parcel_id = c.parcel_id
+set p.pop_2025 = c.persons
+;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+inner join v2050_dseis_stc_run6_aws03_20181023_2017.jobs_by_parcel_2017 c
+on p.parcel_id = c.parcel_id
+set p.jobs_2017 = c.jobs
+;
+
+
+update v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050 p
+inner join v2050_dseis_stc_run6_aws03_20181023_2025.jobs_by_parcel_2025 c
+on p.parcel_id = c.parcel_id
+set p.jobs_2025 = c.jobs
+;
+
+select
+city_id_w6paa
+,tod_id_crow_flies
+,sum(pop_2017) as pop_2017
+,sum(pop_2025) as pop_2025
+,sum(persons_50) as pop_2050
+,sum(jobs_2017) as jobs_2017
+,sum(jobs_2025) as jobs_2025
+,sum(jobs_50) as jobs_2050
+from v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050
+group by
+city_id_w6paa
+,tod_id_crow_flies
+;
