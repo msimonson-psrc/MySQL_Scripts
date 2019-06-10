@@ -1,0 +1,171 @@
+create database data_request_spu_eco_luv2_20190609;
+
+
+
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+create table data_request_spu_eco_luv2_20190609.sample_basin_parcels
+(
+parcel_id integer not null
+,x_coord_sp float not null
+,y_coord_sp float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'T:/2019June/MarkS/SPU_Request/sample_parcels.csv'
+INTO TABLE data_request_spu_eco_luv2_20190609.sample_basin_parcels
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+);
+
+
+SELECT * FROM data_request_spu_eco_luv2_20190609.sample_basin_parcels s;
+
+
+SELECT * FROM luv2_final_outputs_2040.buildings limit 10;
+luv2_final_outputs_2040.buildings.building_id
+luv2_final_outputs_2040.buildings.non_residential_sqft
+luv2_final_outputs_2040.buildings.year_built
+luv2_final_outputs_2040.buildings.not_demolish
+luv2_final_outputs_2040.buildings.parcel_id
+luv2_final_outputs_2040.buildings.job_capacity
+luv2_final_outputs_2040.buildings.land_area
+luv2_final_outputs_2040.buildings.improvement_value
+luv2_final_outputs_2040.buildings.stories
+luv2_final_outputs_2040.buildings.building_type_id
+luv2_final_outputs_2040.buildings.template_id
+luv2_final_outputs_2040.buildings.sqft_per_unit
+luv2_final_outputs_2040.buildings.residential_units
+
+SELECT
+land_area
+,year_built
+,count(building_id)
+FROM luv2_final_outputs_2040.buildings
+where land_area = 0
+group by
+year_built,
+land_area;
+
+SELECT * FROM psrc_2014_parcel_baseyear.buildings where building_type_id = 19;
+
+create table data_request_spu_eco_luv2_20190609.sample_basin_buildings_2040
+select
+luv2_final_outputs_2040.buildings.building_id
+,luv2_final_outputs_2040.buildings.non_residential_sqft
+,luv2_final_outputs_2040.buildings.year_built
+,luv2_final_outputs_2040.buildings.not_demolish
+,luv2_final_outputs_2040.buildings.parcel_id
+,luv2_final_outputs_2040.buildings.job_capacity
+,luv2_final_outputs_2040.buildings.land_area
+,luv2_final_outputs_2040.buildings.improvement_value
+,luv2_final_outputs_2040.buildings.stories
+,luv2_final_outputs_2040.buildings.building_type_id
+,luv2_final_outputs_2040.buildings.template_id
+,luv2_final_outputs_2040.buildings.sqft_per_unit
+,luv2_final_outputs_2040.buildings.residential_units
+from luv2_final_outputs_2040.buildings
+inner join data_request_spu_eco_luv2_20190609.sample_basin_parcels
+on luv2_final_outputs_2040.buildings.parcel_id = data_request_spu_eco_luv2_20190609.sample_basin_parcels.parcel_id
+;
+
+
+create table data_request_spu_eco_luv2_20190609.sample_basin_buildings_2014
+select
+luv2_final_outputs_2014.buildings.building_id
+,luv2_final_outputs_2014.buildings.non_residential_sqft
+,luv2_final_outputs_2014.buildings.year_built
+,luv2_final_outputs_2014.buildings.not_demolish
+,luv2_final_outputs_2014.buildings.parcel_id
+,luv2_final_outputs_2014.buildings.job_capacity
+,luv2_final_outputs_2014.buildings.land_area
+,luv2_final_outputs_2014.buildings.improvement_value
+,luv2_final_outputs_2014.buildings.stories
+,luv2_final_outputs_2014.buildings.building_type_id
+,luv2_final_outputs_2014.buildings.template_id
+,luv2_final_outputs_2014.buildings.sqft_per_unit
+,luv2_final_outputs_2014.buildings.residential_units
+from luv2_final_outputs_2014.buildings
+inner join data_request_spu_eco_luv2_20190609.sample_basin_parcels
+on luv2_final_outputs_2014.buildings.parcel_id = data_request_spu_eco_luv2_20190609.sample_basin_parcels.parcel_id
+;
+
+SELECT * FROM data_request_spu_eco_luv2_20190609.sample_basin_buildings_2040 s;
+
+SELECT
+tax_exempt_flag
+,exemption
+,count(parcel_id)
+FROM luv2_final_outputs_2040.parcels
+group by
+tax_exempt_flag
+,exemption
+;
+
+
+SELECT * FROM luv2_final_outputs_2040.parcels limit 10;
+
+
+create table data_request_spu_eco_luv2_20190609.sample_basin_parcels_2014
+select
+luv2_final_outputs_2014.parcels.parcel_id
+,luv2_final_outputs_2014.parcels.land_use_type_id
+,luv2_final_outputs_2014.parcels.plan_type_id
+,luv2_final_outputs_2014.parcels.x_coord_sp
+,luv2_final_outputs_2014.parcels.y_coord_sp
+,luv2_final_outputs_2014.parcels.use_code
+,luv2_final_outputs_2014.parcels.unit_price
+,luv2_final_outputs_2014.parcels.parcel_sqft
+,luv2_final_outputs_2014.parcels.parcel_sqft_in_gis
+,luv2_final_outputs_2014.parcels.land_value
+,luv2_final_outputs_2014.parcels.tax_exempt_flag
+,luv2_final_outputs_2014.parcels.exemption
+,luv2_final_outputs_2014.parcels.zone_id
+,luv2_final_outputs_2014.parcels.faz_id
+,luv2_final_outputs_2014.parcels.city_id
+from luv2_final_outputs_2014.parcels
+inner join data_request_spu_eco_luv2_20190609.sample_basin_parcels
+on luv2_final_outputs_2014.parcels.parcel_id = data_request_spu_eco_luv2_20190609.sample_basin_parcels.parcel_id
+;
+
+
+create table data_request_spu_eco_luv2_20190609.sample_basin_parcels_2040
+select
+luv2_final_outputs_2040.parcels.parcel_id
+,luv2_final_outputs_2040.parcels.land_use_type_id
+,luv2_final_outputs_2040.parcels.plan_type_id
+,luv2_final_outputs_2040.parcels.x_coord_sp
+,luv2_final_outputs_2040.parcels.y_coord_sp
+,luv2_final_outputs_2040.parcels.use_code
+,luv2_final_outputs_2040.parcels.unit_price
+,luv2_final_outputs_2040.parcels.parcel_sqft
+,luv2_final_outputs_2040.parcels.parcel_sqft_in_gis
+,luv2_final_outputs_2040.parcels.land_value
+,luv2_final_outputs_2040.parcels.tax_exempt_flag
+,luv2_final_outputs_2040.parcels.exemption
+,luv2_final_outputs_2040.parcels.zone_id
+,luv2_final_outputs_2040.parcels.faz_id
+,luv2_final_outputs_2040.parcels.city_id
+from luv2_final_outputs_2040.parcels
+inner join data_request_spu_eco_luv2_20190609.sample_basin_parcels
+on luv2_final_outputs_2040.parcels.parcel_id = data_request_spu_eco_luv2_20190609.sample_basin_parcels.parcel_id
+;
+
+
+SELECT * FROM psrc_2014_parcel_baseyear.land_use_types l;
+
+SELECT * FROM data_request_spu_eco_luv2_20190609.sample_basin_buildings_2040 s;
+
+
+
+
+
+
