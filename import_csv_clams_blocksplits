@@ -1,0 +1,86 @@
+create database sandbox_mhs_17blocksplits;
+
+drop table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance;
+
+drop table sandbox_mhs_17blocksplits.blocks_to_juris;
+
+create table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance
+(
+GEOID10 Text not null
+,bCOUNTY Text not null
+,bSecField Text not null
+,POP2017 Float not null
+,HHP2017 Float not null
+,GQ2017 Float not null
+,HU2017 Float not null
+,OHU2017 Float not null
+,rxHHpop Float not null
+,rxGQpop Float not null
+,splitblkHHpop Float not null
+,splitblkGQpop Float not null
+,splitblkTotpop Float not null
+);
+
+
+create table sandbox_mhs_17blocksplits.blocks_to_juris
+(
+GEOID10 Text not null
+,bCOUNTY Text not null
+,bSecField Text not null
+,POP2017 Float not null
+,HHP2017 Float not null
+,GQ2017 Float not null
+,HU2017 Float not null
+,OHU2017 Float not null
+,rxHHpop Float not null
+,rxGQpop Float not null
+,splitblkHHpop Float not null
+,splitblkGQpop Float not null
+,splitblkTotpop Float not null
+,splitblkHH Float not null
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/tod_est2017.csv'
+INTO TABLE sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+GEOID10
+,bCOUNTY
+,bSecField
+,POP2017
+,HHP2017
+,GQ2017
+,HU2017
+,OHU2017
+,rxHHpop
+,rxGQpop
+,splitblkHHpop
+,splitblkGQpop
+,splitblkTotpop
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/juris_est2017.csv'
+INTO TABLE sandbox_mhs_17blocksplits.blocks_to_juris
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+GEOID10
+,bCOUNTY
+,bSecField
+,POP2017
+,HHP2017
+,GQ2017
+,HU2017
+,OHU2017
+,rxHHpop
+,rxGQpop
+,splitblkHHpop
+,splitblkGQpop
+,splitblkTotpop
+,splitblkHH
+);
