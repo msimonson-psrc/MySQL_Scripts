@@ -382,9 +382,9 @@ alter table parcels_with_built_2014_2040
 add column land_use_type_id_2014 integer
 ,add column land_use_type_id_2040 integer
 ,add column built_du_acre_14 float
-,add column built_du_acre_50 float
+,add column built_du_acre_40 float
 ,add column built_far_14 float
-,add column built_far_50 float
+,add column built_far_40 float
 ,add column x_coord_sp float
 ,add column y_coord_sp float
 ,add column g1_du_max float
@@ -396,23 +396,23 @@ add column land_use_type_id_2014 integer
 ,add column g6_far_max float
 ,add column parcel_is_locked_out integer
 ,add column jobs_14 integer
-,add column jobs_50 integer
+,add column jobs_40 integer
 ,add column households_14 integer
-,add column households_50 integer
+,add column households_40 integer
 ,add column persons_14 integer
-,add column persons_50 integer
+,add column persons_40 integer
 ,add column hu_14 integer
-,add column hu_50 integer
+,add column hu_40 integer
 ,add column res_sqft_14 integer
-,add column res_sqft_50 integer
+,add column res_sqft_40 integer
 ,add column nonres_sqft_14 integer
-,add column nonres_sqft_50 integer
-,add column job_chg_14_50 integer
-,add column hh_chg_14_50 integer
-,add column per_chg_14_50 integer
-,add column hu_chg_14_50 integer
-,add column res_sqft_chg_14_50 integer
-,add column nonres_sqft_chg_14_50 integer
+,add column nonres_sqft_40 integer
+,add column job_chg_14_40 integer
+,add column hh_chg_14_40 integer
+,add column per_chg_14_40 integer
+,add column hu_chg_14_40 integer
+,add column res_sqft_chg_14_40 integer
+,add column nonres_sqft_chg_14_40 integer
 ,add column got_vacant_land_proposal integer
 ,add column got_redevelopment_proposal integer
 ,add column got_proposal_of_either_type integer
@@ -794,14 +794,14 @@ drop column mpd_split_use_housing_units_added
 # ====
 update parcels_with_built_2014_2040
 set built_du_acre_14 = 0
-,built_du_acre_50 = 0
+,built_du_acre_40 = 0
 ,built_far_14 = 0
-,built_far_50 = 0;
+,built_far_40 = 0;
 update parcels_with_built_2014_2040
 set built_du_acre_14 = residential_units_2014 / (parcel_sqft/43560)
-,built_du_acre_50 = residential_units_2040 / (parcel_sqft/43560)
+,built_du_acre_40 = residential_units_2040 / (parcel_sqft/43560)
 ,built_far_14 = non_residential_sqft_2014 / parcel_sqft
-,built_far_50 = non_residential_sqft_2040 / parcel_sqft;
+,built_far_40 = non_residential_sqft_2040 / parcel_sqft;
 # ===
 # Lockout or not
 # ===
@@ -970,15 +970,15 @@ from jobs_2040
 group by parcel_id;
 
 alter table jobs_2040_by_parcel add primary key(parcel_id);
-update parcels_with_built_2014_2040 set jobs_50 =0;
-update parcels_with_built_2014_2040 set job_chg_14_50 =0;
+update parcels_with_built_2014_2040 set jobs_40 =0;
+update parcels_with_built_2014_2040 set job_chg_14_40 =0;
 
 update parcels_with_built_2014_2040
 inner join jobs_2040_by_parcel
 on parcels_with_built_2014_2040.parcel_id=jobs_2040_by_parcel.parcel_id
-set parcels_with_built_2014_2040.jobs_50=jobs_2040_by_parcel.jobs;
+set parcels_with_built_2014_2040.jobs_40=jobs_2040_by_parcel.jobs;
 
-update parcels_with_built_2014_2040 set job_chg_14_50=jobs_50-jobs_14;
+update parcels_with_built_2014_2040 set job_chg_14_40=jobs_40-jobs_14;
 
 create table households_2040
 select building_id,
@@ -1002,19 +1002,19 @@ from households_2040
 group by parcel_id;
 
 alter table households_2040_by_parcel add primary key(parcel_id);
-update parcels_with_built_2014_2040 set households_50 =0;
-update parcels_with_built_2014_2040 set hh_chg_14_50 =0;
-update parcels_with_built_2014_2040 set persons_50 =0;
-update parcels_with_built_2014_2040 set per_chg_14_50 =0;
+update parcels_with_built_2014_2040 set households_40 =0;
+update parcels_with_built_2014_2040 set hh_chg_14_40 =0;
+update parcels_with_built_2014_2040 set persons_40 =0;
+update parcels_with_built_2014_2040 set per_chg_14_40 =0;
 
 update parcels_with_built_2014_2040
 inner join households_2040_by_parcel
 on parcels_with_built_2014_2040.parcel_id=households_2040_by_parcel.parcel_id
-set parcels_with_built_2014_2040.households_50=households_2040_by_parcel.households,
-parcels_with_built_2014_2040.persons_50=households_2040_by_parcel.persons;
+set parcels_with_built_2014_2040.households_40=households_2040_by_parcel.households,
+parcels_with_built_2014_2040.persons_40=households_2040_by_parcel.persons;
 
-update parcels_with_built_2014_2040 set hh_chg_14_50=households_50-households_14;
-update parcels_with_built_2014_2040 set per_chg_14_50=persons_50-persons_14;
+update parcels_with_built_2014_2040 set hh_chg_14_40=households_40-households_14;
+update parcels_with_built_2014_2040 set per_chg_14_40=persons_40-persons_14;
 update parcels_with_built_2014_2040 set land_use_type_id_2014 = land_use_type_id;
 update parcels_with_built_2014_2040
 inner join luv2_final_outputs_2040.parcels
@@ -1033,25 +1033,25 @@ Group by luv2_final_outputs_2040.buildings.parcel_id;
 alter table built_2040 add primary key(parcel_id);
 
 update parcels_with_built_2014_2040
-set hu_50 = 0
-,res_sqft_50=0
-,nonres_sqft_50 = 0;
+set hu_40 = 0
+,res_sqft_40=0
+,nonres_sqft_40 = 0;
 
 update parcels_with_built_2014_2040
-set hu_50 = 0
-,res_sqft_50 = 0
-,nonres_sqft_50 = 0;
+set hu_40 = 0
+,res_sqft_40 = 0
+,nonres_sqft_40 = 0;
 
 update parcels_with_built_2014_2040 p
 inner join built_2040 b
 on p.parcel_id = b.parcel_id
-set p.hu_50 = b.residential_units_2040
-,p.res_sqft_50 = b.residential_sqft_2040
-,p.nonres_sqft_50 = b.non_residential_sqft_2040;
+set p.hu_40 = b.residential_units_2040
+,p.res_sqft_40 = b.residential_sqft_2040
+,p.nonres_sqft_40 = b.non_residential_sqft_2040;
 
-update parcels_with_built_2014_2040 set hu_chg_14_50 = hu_50-hu_14;
-update parcels_with_built_2014_2040 set res_sqft_chg_14_50 = res_sqft_50-res_sqft_14;
-update parcels_with_built_2014_2040 set nonres_sqft_chg_14_50 = nonres_sqft_50-nonres_sqft_14;
+update parcels_with_built_2014_2040 set hu_chg_14_40 = hu_40-hu_14;
+update parcels_with_built_2014_2040 set res_sqft_chg_14_40 = res_sqft_40-res_sqft_14;
+update parcels_with_built_2014_2040 set nonres_sqft_chg_14_40 = nonres_sqft_40-nonres_sqft_14;
 
 Drop table if exists residential_development_constraints_summary;
 Drop table if exists non_residential_development_constraints_summary;
