@@ -24,6 +24,13 @@
 
 # Before starting the script, navigate to the 2014 results database
 
+# NEW July 2019 - if you are re-running this from scratch on a database that already tried to run this script, uncomment the
+# following lines to clean out columns that get added to development templates and components tables
+
+# Alter table development_template_components drop column res_or_non;
+# Alter table development_template_components drop column percent_res;
+# Alter table development_templates drop column building_sqft_per_unit;
+# Alter table development_templates drop column percent_res;
 
 Drop table if exists parcels_with_built_2014_2040;
 Drop table if exists residential_development_constraints_summary;
