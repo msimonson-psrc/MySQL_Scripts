@@ -1,0 +1,269 @@
+SELECT
+faz_id
+,sum(jobs_14)
+,sum(jobs_50)
+FROM parcels_with_built_2014_2040
+group by faz_id;
+
+alter table development_template_components drop column res_or_non;
+alter table development_template_components drop column percent_res;
+alter table development_templates drop column building_sqft_per_unit;
+alter table development_templates drop column percent_res;
+
+SELECT
+#city_id
+sum(households_14) as hh14
+,sum(households_40) as hh40
+FROM parcels_with_built_2014_2040
+#group by city_id;
+;
+
+
+SELECT * FROM luv2_final_outputs_2014.parcels_with_built_2014_2040 p;
+
+
+SELECT * FROM parcels_with_built_2014_2040 p;
+
+CREATE TABLE data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+SELECT *
+FROM luv2_final_outputs_2014.parcels_with_built_2014_2040;
+
+
+ALTER TABLE data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+ADD COLUMN sample_basin_parcel integer;
+
+UPDATE data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+SET sample_basin_parcel = 0;
+
+UPDATE data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2 p
+inner join data_request_spu_eco_luv2_20190609.sample_basin_parcels b
+on p.parcel_id = b.parcel_id
+SET sample_basin_parcel = 1;
+
+
+SELECT
+parcel_is_locked_out
+,got_proposal_of_either_type
+,had_development_event
+,count(parcel_id) as parcels
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+group by
+parcel_is_locked_out
+,got_proposal_of_either_type
+,had_development_event
+;
+
+SELECT
+parcel_id
+,parcel_sqft
+,year_built
+,maximum_dwelling_units_per_acre
+,parcel_sqft/43560 * maximum_dwelling_units_per_acre as max_units
+,hu_14
+,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre - hu_14,0) as net_units_possible
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and got_proposal_of_either_type = 1
+and had_development_event = 0
+and round(parcel_sqft/43560 * maximum_dwelling_units_per_acre - hu_14,0)>10
+and parcel_sqft> 43560*2
+order by net_units_possible desc;
+;
+
+SELECT
+development_type
+,count(parcel_id) as parcels
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and had_development_event = 1
+group by
+development_type
+;
+
+
+Select * FROM parcels_with_built_2014_2040_luv2
+where parcel_id = 1086514;
+
+SELECT * FROM luv2_final_outputs_2014.development_templates d;
+
+
+
+alter table parcels_with_built_2014_2040_luv2 add index(template_id);
+
+alter table parcels_with_built_2014_2040_luv2
+add column development_type char(25);
+
+update parcels_with_built_2014_2040_luv2 set development_type='none';
+
+update parcels_with_built_2014_2040_luv2 p
+inner join luv2_final_outputs_2014.development_templates d
+on p.template_id = d.template_id
+set p.development_type= d.development_type;
+
+Select
+development_type
+,year_built
+,count(parcel_id)
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and had_development_event =1
+group by
+development_type
+,year_built
+;
+
+alter table parcels_with_built_2014_2040_luv2 add column tractcity_id integer;
+update parcels_with_built_2014_2040_luv2 set tractcity_id = 0;
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+inner join luv2_final_outputs_2040.parcels
+on data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2.parcel_id = luv2_final_outputs_2040.parcels.parcel_id
+set data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2.tractcity_id=luv2_final_outputs_2040.parcels.tractcity_id;
+
+
+select
+tractcity_id
+,count(parcel_id) as parcels
+from data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+where sample_basin_parcel=1
+and had_development_event = 1
+and development_type in ('sfr_parcel','sfr_plat')
+group by
+tractcity_id
+;
+
+
+#create table pwb_1440_luv2_basin_sftype_developed
+SELECT
+parcel_id
+,parcel_sqft
+,round(parcel_sqft/43560,1) as acres
+,minimum_dwelling_units_per_acre as min_du_acre
+,maximum_dwelling_units_per_acre as max_du_acre
+,round(43560/maximum_dwelling_units_per_acre,0) as min_lot_size
+,development_type
+,year_built
+,hu_14
+,hu_40
+,hu_chg_14_40
+,greatest(hu_14,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre,0)) as max_units
+,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre - hu_14,0) as net_units_possible
+,greatest(hu_14,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre,0)) - hu_40 as max_less_actual_units
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and had_development_event = 1
+and development_type in ('sfr_parcel','sfr_plat')
+#and parcel_sqft between 6000 and 8000
+order by max_less_actual_units
+;
+
+select
+max_units
+,hu_40
+,year_built
+,count(parcel_id) as parcels
+,sum(hu_14) as hu_14
+,sum(hu_40) as hu_40
+from pwb_1440_luv2_basin_sftype_developed
+group by
+max_units
+,hu_40
+,year_built
+;
+
+SELECT
+year_built
+,count(building_id) as records
+FROM luv2_final_outputs_2040.buildings
+group by
+year_built;
+
+
+SELECT
+development_type
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,year_built
+,count(parcel_id) as parcels
+,round(parcel_sqft/43560,1) as acres
+,sum(hu_14) as hu_14
+,sum(hu_40) as hu_40
+,sum(hu_chg_14_40) as hu_chg_14_40
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and had_development_event = 1
+and development_type in ('sfr_parcel','sfr_plat')
+#and parcel_sqft between 6000 and 8000
+group by
+development_type
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,year_built
+order by
+year_built
+,maximum_dwelling_units_per_acre
+;
+
+
+SELECT
+parcel_id
+,parcel_sqft
+,round(parcel_sqft/43560,1) as acres
+,year_built
+,minimum_dwelling_units_per_acre
+,maximum_dwelling_units_per_acre
+,development_type
+,hu_14
+,hu_40
+,hu_chg_14_40
+FROM parcels_with_built_2014_2040_luv2
+where sample_basin_parcel = 1
+and had_development_event = 1
+and development_type in ('sfr_parcel','sfr_plat')
+and parcel_sqft between 6000 and 8000
+and year_built<2040
+order by year_built asc;
+#order by hu_chg_14_40 desc
+#order by hu_14 desc
+;
+
+
+SELECT * FROM luv2_final_outputs_2040.parcels
+#where year_built > 2040;
+where parcel_id = 1086514;
+
+
+Select * FROM parcels_with_built_2014_2040_luv2 where parcel_id = 841032;
+
+create table sea_temp
+SELECT * FROM v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050
+where city_id = 9
+and parcel_sqft between 6000 and 8000
+and maximum_dwelling_units_per_acre < 9
+and had_development_event = 1
+order by parcel_sqft
+;
+
+select
+count(parcel_id) as parcels
+,sum(hu_14) as hu_14
+,sum(hu_50) as hu_50
+,sum(households_14) as hh_14
+,sum(households_50) as hh_50
+FROM v2050_dseis_stc_run6_aws03_20181023_2014.sea_temp
+;
+
+
+SELECT
+count(parcel_id) as parcels
+,sum(hu_14) as hu_14
+,sum(hu_50) as hu_50
+,sum(households_14) as hh_14
+,sum(households_50) as hh_50
+FROM v2050_dseis_stc_run6_aws03_20181023_2014.parcels_with_built_2014_2050
+where faz_id = 6420
+and parcel_sqft between 6000 and 8000
+and maximum_dwelling_units_per_acre < 9
+and had_development_event = 1
+;
