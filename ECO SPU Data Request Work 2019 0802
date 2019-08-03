@@ -1,0 +1,295 @@
+alter table parcels_with_built_2014_2040_luv2 add column devtype_allowed char(20);
+update parcels_with_built_2014_2040_luv2 set devtype_allowed = 'na';
+
+update parcels_with_built_2014_2040_luv2 set devtype_allowed = 'none'
+where residential_density_category = 'none' and allowable_far_category = 'none';
+
+update parcels_with_built_2014_2040_luv2 set devtype_allowed = 'mixed_use'
+where is_mixed_use = 'yes';
+
+update parcels_with_built_2014_2040_luv2 set devtype_allowed = 'res_only'
+where residential_density_category not in ('none') and allowable_far_category = 'none';
+
+update parcels_with_built_2014_2040_luv2 set devtype_allowed = 'nonres_only'
+where residential_density_category = 'none' and allowable_far_category not in ('none');
+
+alter table parcels_with_built_2014_2040_luv2 add column base_year_built_status char(20);
+update parcels_with_built_2014_2040_luv2 set base_year_built_status = 'na';
+
+update parcels_with_built_2014_2040_luv2
+set base_year_built_status = 'vacant'
+where hu_14 = 0
+and nonres_sqft_14=0;
+
+update parcels_with_built_2014_2040_luv2
+set base_year_built_status = 'res_only'
+where hu_14 > 0
+and nonres_sqft_14=0;
+
+update parcels_with_built_2014_2040_luv2
+set base_year_built_status = 'nonres_only'
+where hu_14 = 0
+and nonres_sqft_14 > 0;
+
+update parcels_with_built_2014_2040_luv2
+set base_year_built_status = 'mixed_use'
+where hu_14 > 0
+and nonres_sqft_14 > 0;
+
+
+
+SELECT
+base_year_built_status
+,devtype_allowed
+,count(parcel_id) as parcels
+,sum(round(parcel_sqft/43560,1)) as acres
+#,sum(hu_14) as hu_14
+#,sum(hu_40) as hu_40
+#,sum(hu_chg_14_40) as hu_chg_14_40
+#,sum(nonres_sqft_14) as sqft_14
+#,sum(nonres_sqft_40) as sqft_40
+#,sum(nonres_sqft_chg_14_40) as sqft_chg_14_40
+FROM parcels_with_built_2014_2040_luv2
+where
+#city_id = 9
+#county_id = 33
+
+#and
+#got_proposal_of_either_type =1
+#and
+had_development_event_15_40 = 1
+and
+development_type in ('sfr_parcel','sfr_plat')
+and
+year_built in (2021, 2026, 2031, 2036, 2041)
+#max_units_less_2040_units < 0
+group by
+base_year_built_status
+,devtype_allowed
+;
+
+
+select
+city_id
+,count(parcel_id) as parcels
+,sum(round(parcel_sqft/43560,1)) as acres
+,sum(hu_14) as hu_14
+FROM parcels_with_built_2014_2040_luv2
+where
+city_id = 9
+group by
+city_id
+;
+
+select *
+FROM parcels_with_built_2014_2040_luv2
+where
+got_vacant_land_proposal =1
+and
+got_redevelopment_proposal =1
+;
+
+
+SELECT
+residential_density_category
+,development_type
+,count(parcel_id) as parcels
+,sum(round(parcel_sqft/43560,1)) as acres
+FROM parcels_with_built_2014_2040_luv2
+where
+#city_id = 9
+county_id = 33
+
+#and
+#got_proposal_of_either_type =1
+and
+had_development_event = 1
+#and
+#year_built<2041
+group by
+residential_density_category
+,development_type
+;
+
+select
+year_built
+,count(parcel_id) as parcels
+from parcels_with_built_2014_2040_luv2
+where
+#city_id = 9
+#and
+had_development_event = 1
+group by
+year_built
+order by
+year_built
+;
+
+select *
+from parcels_with_built_2014_2040_luv2
+where city_id = 9
+and had_development_event = 1
+and year_built<2013
+order by year_built;
+
+
+SELECT
+building_id
+,parcel_id
+,non_residential_sqft
+,residential_units
+,year_built
+FROM luv2_final_outputs_2014.buildings
+#FROM luv2_final_outputs_2015.buildings
+#FROM luv2_final_outputs_2020.buildings
+#FROM luv2_final_outputs_2025.buildings
+#FROM luv2_final_outputs_2030.buildings
+#FROM luv2_final_outputs_2035.buildings
+#FROM luv2_final_outputs_2040.buildings
+where parcel_id = 878992;
+
+
+
+select *
+#FROM luv2_final_outputs_2014.households
+FROM luv2_final_outputs_2015.households
+#FROM luv2_final_outputs_2020.households
+#FROM luv2_final_outputs_2025.households
+#FROM luv2_final_outputs_2030.households
+#FROM luv2_final_outputs_2035.households
+#FROM luv2_final_outputs_2040.households
+where building_id = 509911;
+
+
+
+select
+year_built
+,count(parcel_id)
+from parcels_with_built_2014_2040_luv2
+where
+development_type in ('sfr_parcel','sfr_plat')
+group by year_built
+;
+
+
+Alter table parcels_with_built_2014_2040_luv2
+add column min_lot_size integer
+,add column max_res_units integer
+,add column net_units_possible integer
+,add column max_units_less_2040_units integer
+;
+
+update parcels_with_built_2014_2040_luv2
+set
+min_lot_size = 0
+,max_res_units = 0
+,net_units_possible = 0
+,max_units_less_2040_units = 0
+;
+
+update parcels_with_built_2014_2040_luv2
+set
+min_lot_size = round(43560/maximum_dwelling_units_per_acre,0)
+,max_res_units = greatest(hu_14,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre,0))
+,net_units_possible = round(parcel_sqft/43560 * maximum_dwelling_units_per_acre - hu_14,0)
+,max_units_less_2040_units = greatest(hu_14,round(parcel_sqft/43560 * maximum_dwelling_units_per_acre,0)) - hu_40
+;
+
+SELECT
+year_built
+,count(parcel_id) as parcels
+FROM parcels_with_built_2014_2040_luv2
+where development_type in ('sfr_parcel','sfr_plat')
+and max_units_less_2040_units < 0
+and year_built>2014
+group by year_built
+;
+
+
+SELECT
+*
+FROM parcels_with_built_2014_2040_luv2
+where development_type in ('sfr_parcel','sfr_plat')
+and max_units_less_2040_units < 0
+and year_built = 2023
+order by max_units_less_2040_units asc
+;
+
+SELECT
+land_use_type_id
+,count(parcel_id)
+FROM parcels_with_built_2014_2040_luv2
+where year_built between 1988 and 2014
+#and city_id = 9
+#and county_id = 33
+group by land_use_type_id
+;
+
+
+SELECT * FROM psrc_2014_parcel_baseyear.land_use_types l;
+
+#####
+## 2nd Result Tab
+######
+
+Create table luv2_final_outputs_2015.built_2015
+Select
+parcel_id,
+sum(residential_units) as residential_units_2015,
+sum(non_residential_sqft) as non_residential_sqft_2015,
+sum(residential_units * sqft_per_unit) as residential_sqft_2015  ## NEW 4-13-18
+From luv2_final_outputs_2015.buildings
+Group by parcel_id
+;
+
+Alter table luv2_final_outputs_2015.built_2015 Add Index (parcel_id)
+;
+
+## =====
+alter table data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+add column hu_15 integer
+,add column res_sqft_15 integer
+,add column nonres_sqft_15 integer
+,add column hu_chg_15_40 integer
+,add column res_sqft_chg_15_40 integer
+,add column nonres_sqft_chg_15_40 integer
+;
+
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+set hu_15 = 0
+,res_sqft_15 = 0
+,nonres_sqft_15 = 0
+,hu_chg_15_40 = 0
+,res_sqft_chg_15_40 = 0
+,nonres_sqft_chg_15_40 = 0
+;
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2 p
+inner join luv2_final_outputs_2015.built_2015 b
+on p.parcel_id = b.parcel_id
+set p.hu_15 = b.residential_units_2015
+,p.res_sqft_15 = b.residential_sqft_2015
+,p.nonres_sqft_15 = b.non_residential_sqft_2015;
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+set
+hu_chg_15_40 = hu_40 - hu_15
+,res_sqft_chg_15_40 = res_sqft_40 - res_sqft_15
+,nonres_sqft_chg_15_40 = nonres_sqft_40 - nonres_sqft_15;
+
+alter table data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+add column had_development_event_15_40 integer
+;
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+set had_development_event_15_40 = 0
+;
+
+update data_request_spu_eco_luv2_20190609.parcels_with_built_2014_2040_luv2
+set had_development_event_15_40 = 1
+where
+hu_chg_15_40 > 0
+or
+nonres_sqft_chg_15_40 > 0
+;
