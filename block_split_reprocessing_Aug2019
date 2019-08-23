@@ -180,3 +180,147 @@ county_juris
 
 
 SELECT * FROM blocks_to_tod_id_network_distance b;
+
+
+alter table blocks_to_tod_id_network_distance
+add column splitblkHH float;
+
+update blocks_to_tod_id_network_distance set splitblkHH = 0;
+
+update blocks_to_tod_id_network_distance set splitblkHH = rxHHpop * OHU2017;
+
+SELECT
+county_juris
+,juris
+,count(GEOID10) AS records
+,sum(splitblkHH) as HHs
+,sum(splitblkHHpop) as HHpop
+,sum(splitblkGQpop) as GQpop
+,sum(splitblkTotpop) as Totpop
+FROM blocks_to_tod_id_network_distance
+#where bSecField = 4
+#where bSecField in (1,2,5,6)
+where bSecField in (1,2,4,5,6)
+group by
+county_juris
+,juris
+;
+
+SELECT
+sum(DUbase)
+,sum(DUcapacity50)
+#count(parcel_id)
+FROM v2050_parcel_capacity.capacity_indicator_parcel_20190306
+#limit 10
+;
+
+
+
+SELECT
+city_id
+,count(parcel_id)
+FROM 2014_parcel_baseyear_core.parcels_80pseudo
+group by city_id;
+
+create table parcels_pseudo80_capacity_netdist
+select
+parcel_id
+,tod_id
+,city_id
+FROM 2014_parcel_baseyear_core.parcels_80pseudo
+;
+
+alter table parcels_pseudo80_capacity_netdist
+add primary key(parcel_id)
+,add column du_base float
+,add column du_capacity_50 float
+,add column du_capacity_net float
+,add column jobs_base float
+,add column jobs_capacity_50 float
+,add column jobs_capacity_net float
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+du_base=0
+,du_capacity_50=0
+,du_capacity_net=0
+,jobs_base=0
+,jobs_capacity_50=0
+,jobs_capacity_net=0
+;
+
+update parcels_pseudo80_capacity_netdist
+inner join capacity_indicator_parcel_20190306
+on parcels_pseudo80_capacity_netdist.parcel_id = capacity_indicator_parcel_20190306.parcel_id
+set
+parcels_pseudo80_capacity_netdist.du_base= capacity_indicator_parcel_20190306.DUbase
+,parcels_pseudo80_capacity_netdist.du_capacity_50= capacity_indicator_parcel_20190306.DUcapacity50
+,parcels_pseudo80_capacity_netdist.jobs_base= capacity_indicator_parcel_20190306.JOBSPbase
+,parcels_pseudo80_capacity_netdist.jobs_capacity_50 =capacity_indicator_parcel_20190306.JOBSPcapacity50
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+du_capacity_net= du_capacity_50-du_base
+,jobs_capacity_net=jobs_capacity_50-jobs_base
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+du_capacity_net= 0
+where du_capacity_net <0
+;
+
+
+update parcels_pseudo80_capacity_netdist
+set
+jobs_capacity_net= 0
+where jobs_capacity_net <0
+;
+
+
+select
+city_id
+,count(parcel_id) as parcels
+,sum(du_capacity_net) as net_du_capacity
+,sum(jobs_capacity_net) as net_emp_capacity
+from parcels_pseudo80_capacity_netdist
+group by city_id
+;
+
+alter table parcels_pseudo80_capacity_netdist
+add column true_city_id int
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+true_city_id =0
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+true_city_id = city_id - 3000
+where city_id>3000
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+true_city_id = city_id - 2000
+where city_id between 2000 and 3000
+;
+
+update parcels_pseudo80_capacity_netdist
+set
+true_city_id = city_id
+where city_id < 1000
+;
+
+select
+true_city_id
+,count(parcel_id) as parcels
+,sum(du_capacity_net) as net_du_capacity
+,sum(jobs_capacity_net) as net_emp_capacity
+from parcels_pseudo80_capacity_netdist
+group by true_city_id
+;
