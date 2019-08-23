@@ -1,0 +1,182 @@
+#drop table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance_2;
+#drop table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance;
+#drop table sandbox_mhs_17blocksplits.blocks_to_juris;
+#drop table sandbox_mhs_17blocksplits.blocks_to_juris_2;
+#drop table sandbox_mhs_17blocksplits.temp_freq2plus;
+#drop table sandbox_mhs_17blocksplits.duplicate_geoid10s_juris;
+
+
+create table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance
+(
+GEOID10 Bigint not null
+,bCOUNTY Text not null
+,bSecField Int not null
+,POP2017 Float not null
+,HHP2017 Float not null
+,GQ2017 Float not null
+,HU2017 Float not null
+,OHU2017 Float not null
+,rxHHpop Float not null
+,rxGQpop Float not null
+,splitblkHHpop Float not null
+,splitblkGQpop Float not null
+,splitblkTotpop Float not null
+);
+
+
+create table sandbox_mhs_17blocksplits.blocks_to_juris
+(
+GEOID10 Bigint not null
+,bCOUNTY Text not null
+,bSecField Text not null
+,POP2017 Float not null
+,HHP2017 Float not null
+,GQ2017 Float not null
+,HU2017 Float not null
+,OHU2017 Float not null
+,rxHHpop Float not null
+,rxGQpop Float not null
+,splitblkHHpop Float not null
+,splitblkGQpop Float not null
+,splitblkTotpop Float not null
+,splitblkHH Float not null
+);
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/tod_est2017.csv'
+INTO TABLE sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+GEOID10
+,bCOUNTY
+,bSecField
+,POP2017
+,HHP2017
+,GQ2017
+,HU2017
+,OHU2017
+,rxHHpop
+,rxGQpop
+,splitblkHHpop
+,splitblkGQpop
+,splitblkTotpop
+);
+
+select * from sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance;
+alter table sandbox_mhs_17blocksplits.blocks_to_tod_id_network_distance add index(GEOID10);
+
+
+LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/juris_est2017.csv'
+INTO TABLE sandbox_mhs_17blocksplits.blocks_to_juris
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+GEOID10
+,bCOUNTY
+,bSecField
+,POP2017
+,HHP2017
+,GQ2017
+,HU2017
+,OHU2017
+,rxHHpop
+,rxGQpop
+,splitblkHHpop
+,splitblkGQpop
+,splitblkTotpop
+,splitblkHH
+);
+
+select * from sandbox_mhs_17blocksplits.blocks_to_juris;
+alter table sandbox_mhs_17blocksplits.blocks_to_juris add index(GEOID10);
+
+
+create table geoid10s_juris_frequency
+SELECT
+GEOID10
+,count(GEOID10) as frequency
+FROM sandbox_mhs_17blocksplits.blocks_to_juris
+group by GEOID10;
+
+alter table geoid10s_juris_frequency add index (GEOID10);
+
+alter table sandbox_mhs_17blocksplits.blocks_to_juris add column frequency int;
+update sandbox_mhs_17blocksplits.blocks_to_juris set frequency = 0;
+
+update blocks_to_juris
+inner join geoid10s_juris_frequency
+on blocks_to_juris.GEOID10 = geoid10s_juris_frequency.GEOID10
+set blocks_to_juris.frequency = geoid10s_juris_frequency.frequency;
+
+
+create table geoid10s_juris_maxpop_for_freq2plus
+select
+GEOID10
+,bcounty
+,bSecField
+,frequency
+,max(splitblkTotpop)
+from blocks_to_juris
+where frequency>1
+group by GEOID10
+order by frequency desc
+;
+
+create table final_blocks_to_juris
+select
+GEOID10
+,bcounty
+,bSecField
+from blocks_to_juris
+where frequency=1;
+
+insert into final_blocks_to_juris
+(
+GEOID10
+,bcounty
+,bSecField
+)
+select
+GEOID10
+,bcounty
+,bSecField
+from geoid10s_juris_maxpop_for_freq2plus;
+
+alter table final_blocks_to_juris add index(GEOID10);
+
+SELECT * FROM final_blocks_to_juris f;
+
+alter table blocks_to_tod_id_network_distance add column county_juris text, add column juris text;
+
+update blocks_to_tod_id_network_distance
+set county_juris = 'na'
+,juris = 'na';
+
+update blocks_to_tod_id_network_distance
+INNER join final_blocks_to_juris
+on blocks_to_tod_id_network_distance.GEOID10 = final_blocks_to_juris.GEOID10
+SET blocks_to_tod_id_network_distance.county_juris = final_blocks_to_juris.bcounty
+,blocks_to_tod_id_network_distance.juris = final_blocks_to_juris.bSecField;
+
+SELECT
+county_juris
+,juris
+,count(GEOID10) AS records
+,sum(splitblkHHpop) as HHpop
+,sum(splitblkGQpop) as GQpop
+,sum(splitblkTotpop) as Totpop
+FROM blocks_to_tod_id_network_distance
+#where bSecField = 4
+#where bSecField in (1,2,5,6)
+where bSecField in (1,2,4,5,6)
+group by
+county_juris
+,juris
+;
+
+
+SELECT * FROM blocks_to_tod_id_network_distance b;
