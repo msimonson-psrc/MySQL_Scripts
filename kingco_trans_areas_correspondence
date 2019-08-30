@@ -1,0 +1,89 @@
+
+drop table v2050_parcel_capacity.parcels_kingco_trans_areas;
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+create table v2050_parcel_capacity.temp
+(
+FID integer not null
+,FID_1  integer not null
+,parcel_id  integer not null
+,x_coord_sp  integer not null
+,y_coord_sp  integer not null
+,OBJECTID_1  integer not null
+,OBJECTID  integer not null
+,CNTYNAME varchar(20)
+,Shape_Leng float not null
+,Subarea varchar(20)
+,sub_id varchar(10)
+,Shape_Le_1 float not null
+,Shape_Area float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'c:/gis_files/joined_parcels_king_trans_areas.txt'
+INTO TABLE v2050_parcel_capacity.temp
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+FID
+,FID_1
+,parcel_id
+,x_coord_sp
+,y_coord_sp
+,OBJECTID_1
+,OBJECTID
+,CNTYNAME
+,Shape_Leng
+,Subarea
+,sub_id
+,Shape_Le_1
+,Shape_Area
+);
+
+create table v2050_parcel_capacity.parcels_kingco_trans_areas
+SELECT
+parcel_id
+,county_id
+,x_coord_sp
+,y_coord_sp
+FROM 2014_parcel_baseyear_core.parcels;
+
+alter table v2050_parcel_capacity.parcels_kingco_trans_areas
+add column kingco_trans_area varchar(20);
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'not assigned';
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'snohomish' where county_id = 61;
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'pierce' where county_id = 53;
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'kitsap' where county_id = 35;
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+inner join v2050_parcel_capacity.temp
+on v2050_parcel_capacity.parcels_kingco_trans_areas.parcel_id = v2050_parcel_capacity.temp.parcel_id
+set v2050_parcel_capacity.parcels_kingco_trans_areas.kingco_trans_area = v2050_parcel_capacity.temp.Subarea;
+
+select
+kingco_trans_area
+,count(parcel_id) as parcels
+from v2050_parcel_capacity.parcels_kingco_trans_areas
+group by kingco_trans_area;
+
+select * from v2050_parcel_capacity.parcels_kingco_trans_areas
+where kingco_trans_area = 'not assigned' order by y_coord_sp;
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'South King' where kingco_trans_area = 'not assigned' and y_coord_sp < 156000;
+
+update v2050_parcel_capacity.parcels_kingco_trans_areas
+set kingco_trans_area = 'East King' where kingco_trans_area = 'not assigned' and y_coord_sp > 156000;
+
