@@ -1,0 +1,114 @@
+alter table annual_employment_control_totals add index(city_id);
+
+
+#create table temp_county_20
+SELECT
+#annual_household_control_totals.city_id
+#,cities_orig_to_run.city_name
+cities_orig_to_run.county_id
+,annual_household_control_totals.year
+,annual_household_control_totals.persons_min
+,annual_household_control_totals.persons_max
+,annual_household_control_totals.workers_min
+,annual_household_control_totals.workers_max
+,annual_household_control_totals.income_min
+,annual_household_control_totals.income_max
+,sum(annual_household_control_totals.total_number_of_households) as tot_hh
+FROM craigs_test_run.annual_household_control_totals
+inner join craigs_test_run.cities_orig_to_run
+on craigs_test_run.annual_household_control_totals.city_id = craigs_test_run.cities_orig_to_run.city_id
+where annual_household_control_totals.year in (2020)
+group by
+#annual_household_control_totals.city_id
+#,cities_orig_to_run.city_name
+cities_orig_to_run.county_id
+,annual_household_control_totals.year
+,annual_household_control_totals.persons_min
+,annual_household_control_totals.persons_max
+,annual_household_control_totals.workers_min
+,annual_household_control_totals.workers_max
+,annual_household_control_totals.income_min
+,annual_household_control_totals.income_max
+;
+
+SELECT
+#annual_household_control_totals.city_id
+#,cities_orig_to_run.city_name
+cities_orig_to_run.county_id
+,annual_employment_control_totals.year
+,annual_employment_control_totals.home_based_status
+,annual_employment_control_totals.sector_id
+,sum(annual_employment_control_totals.total_number_of_jobs) as tot_jobs
+FROM craigs_test_run.annual_employment_control_totals
+inner join craigs_test_run.cities_orig_to_run
+on craigs_test_run.annual_employment_control_totals.city_id = craigs_test_run.cities_orig_to_run.city_id
+#where annual_employment_control_totals.year in (2020)
+group by
+#annual_household_control_totals.city_id
+#,cities_orig_to_run.city_name
+cities_orig_to_run.county_id
+,annual_employment_control_totals.year
+,annual_employment_control_totals.home_based_status
+,annual_employment_control_totals.sector_id
+;
+
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+drop table craigs_test_run.annual_household_contro_totals_craigtestrun;
+
+create table craigs_test_run.annual_household_control_totals_craigstestrun
+(
+total_number_of_households integer(11) not null
+,city_id integer(11) not null
+,year integer(11) not null
+,persons_min integer(11) not null
+,income_min integer(11) not null
+,workers_min integer(11) not null
+,workers_max integer(11) not null
+,income_max integer(11) not null
+,persons_max integer(11) not null
+);
+
+LOAD DATA LOCAL INFILE 'T:/2019September/MarkS/annual_household_control_totals_craigstestrun.csv'
+INTO TABLE craigs_test_run.annual_household_control_totals_craigstestrun
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+total_number_of_households
+,city_id
+,year
+,persons_min
+,income_min
+,workers_min
+,workers_max
+,income_max
+,persons_max
+);
+
+create table craigs_test_run.annual_employment_control_totals_craigstestrun
+(
+city_id integer(11) not null
+,home_based_status integer(11) not null
+,year integer(11) not null
+,total_number_of_jobs integer(11) not null
+,sector_id integer(11) not null
+);
+
+LOAD DATA LOCAL INFILE 'T:/2019September/MarkS/annual_employment_control_totals_craigstestrun.csv'
+INTO TABLE craigs_test_run.annual_employment_control_totals_craigstestrun
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+city_id
+,home_based_status
+,year
+,total_number_of_jobs
+,sector_id
+);
+
