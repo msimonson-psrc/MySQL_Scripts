@@ -1,0 +1,91 @@
+SELECT
+count(OBJECTID)
+FROM kitsap_2018_parcel_baseyear.buildings_assessor
+;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.buildings_assessor LIMIT 1;
+
+
+SELECT
+COUNT(BUILDING_ID)
+FROM kitsap_2018_parcel_baseyear.buildings;
+
+select * FROM kitsap_2018_parcel_baseyear.buildings limit 1;
+
+
+SELECT count(RecID) FROM kitsap_2018_parcel_baseyear.kitsap_dwelling;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_dwelling limit 1;
+
+
+SELECT count(RecID) FROM kitsap_2018_parcel_baseyear.kitsap_commercial_improvement;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_commercial_improvement limit 1;
+
+select count(id) from prep_buildings;
+
+select * from prep_buildings limit 1;
+
+select ImprovementDescription
+,count(RecID) as records
+from kitsap_commercial_improvement group by ImprovementDescription
+order by records desc;
+
+
+select
+IMPROV_TYP
+,BLDG_TYP
+,USE_DESC
+,count(objectid) as records
+from buildings_assessor
+group by
+IMPROV_TYP
+,BLDG_TYP
+,USE_DESC
+order by
+IMPROV_TYP
+,records desc;
+
+select * from buildings_assessor
+where USE_DESC = 'Apartments' limit 10;
+
+select *
+#from kitsap_dwelling
+#from kitsap_commercial_improvement
+#from kitsap_valuation
+from buildings_assessor
+where RP_ACCT_ID = 1040807
+#where RealPropertyAccountID = 1040807
+;
+
+SELECT *
+FROM land
+#from main
+#where RealPropertyAccountID = 1040807;
+where RP_ACCT_ID = 1040807;
+
+
+limit 10;
+
+SELECT
+use_code
+,count(building_id) as records
+FROM buildings
+group by use_code;
+
+select * from buildings
+#where use_code = 'Apartments'
+where parcel_id = 1040807
+;
+
+
+select * from buildings_assessor where stories = 0;
+select
+*
+#count(RecID)
+from kitsap_valuation
+where RealPropertyAccountID = 1040807;#limit 10;
+;
+where LandMarketValue=0;
+
+select * from kitsap_dwelling where RealPropertyAccountID = 1010156;
