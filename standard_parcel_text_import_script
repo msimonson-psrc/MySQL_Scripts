@@ -1,0 +1,21 @@
+create table data_requests_working.central_pierce_fd
+(
+FID integer not null
+,parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'C:/mhs_workfiles/gis_files/Central_Pierce_Fire_District_parcels.txt'
+INTO TABLE data_requests_working.central_pierce_fd
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+FID
+,parcel_id
+,x_coord_sp
+,y_coord_sp
+);
