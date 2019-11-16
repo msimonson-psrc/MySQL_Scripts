@@ -1,0 +1,31 @@
+select
+year
+,count(city_id)
+#FROM bazooka_2014.annual_household_control_totals
+FROM bazooka_2014.annual_employment_control_totals
+group by year
+;
+
+SELECT * FROM bazooka_2014.annual_employment_control_totals a;
+
+
+SELECT
+city_id
+,year
+,sum(total_number_of_households) as hhs
+,sum(total_number_of_households * persons_min) as persons
+FROM bazooka_2014.annual_household_control_totals
+where year in (2017,2020,2025,2030,2035,2040,2045,2050)
+group by city_id
+,year;
+
+
+
+SELECT
+city_id
+,year
+,sum(total_number_of_jobs) as jobs
+FROM bazooka_2014.annual_employment_control_totals
+where year in (2017,2020,2025,2030,2035,2040,2045,2050)
+group by city_id
+,year;
