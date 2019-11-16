@@ -1,0 +1,22 @@
+SELECT
+table_name
+#,Engine
+#,Version
+#,Row_format
+,table_rows
+#,Avg_row_length
+#,Data_length
+#,Max_data_length
+#,Index_length
+#,Data_free
+#,Auto_increment
+,Create_time
+,Update_time
+#,Check_time
+#,table_collation
+#,Checksum
+#,Create_options
+#,table_comment
+FROM information_schema.tables
+WHERE table_schema = '2014_parcel_baseyear_core'
+order by Update_time desc
