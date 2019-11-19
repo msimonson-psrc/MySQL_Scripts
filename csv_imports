@@ -14,6 +14,10 @@ proposal_id integer not null
 ,primary key (proposal_id)
 );
 
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
 LOAD DATA LOCAL INFILE 'J:/Projects/UrbanSim/NEW_DIRECTORY/Inputs/base_year_cache/mpds/Reapply_Tehaleh_April2018.csv'
 INTO TABLE psrc_parcel_working_mpds.tehaleh_20180426
 FIELDS TERMINATED BY ','
@@ -58,6 +62,9 @@ fid integer not null
 ,primary key (parcel_id)
 );
 
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
 LOAD DATA LOCAL INFILE 'T:/2018April/rebeccah/SeaMUZone_prcl.csv'
 INTO TABLE run_104_20180406_2014.seattle_select_mu_zoning_parcels
 FIELDS TERMINATED BY ','
@@ -92,6 +99,9 @@ parcel_id integer not null
 ,primary key (parcel_id)
 );
 
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
 LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/snohomish_uu_parcels_flu.csv'
 INTO TABLE run_104_20180406_2014.snohomish_uu_parcels_flu
 FIELDS TERMINATED BY ','
@@ -123,6 +133,9 @@ psrc_id integer not null
 ,units_per_acre float not null
 ,primary key (psrc_id)
 );
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
 
 LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/SnoCo_DensePrcl.csv'
 INTO TABLE run_104_20180406_2014.beccah_snoco_dense_prcl
@@ -165,6 +178,9 @@ fid integer not null
 ,point_y float not null
 ,primary key (psrc_id)
 );
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
 
 LOAD DATA LOCAL INFILE 'C:/Users/msimonson/gis_files/psrc15_4k_text.txt'
 INTO TABLE run_104_20180406_2014.prcl15_4k
