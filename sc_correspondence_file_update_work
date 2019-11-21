@@ -1,28 +1,4 @@
-SELECT
-table_name
-#,Engine
-#,Version
-#,Row_format
-,table_rows
-#,Avg_row_length
-#,Data_length
-#,Max_data_length
-#,Index_length
-#,Data_free
-#,Auto_increment
-,Create_time
-,Update_time
-#,Check_time
-#,table_collation
-#,Checksum
-#,Create_options
-#,table_comment
-FROM information_schema.tables
-WHERE table_schema = '2014_parcel_baseyear_core'
-order by Update_time desc;
-
-SELECT * FROM 2014_parcel_baseyear_core.cities_king_paa order by county_id, rgs_id, city_name;
-
+## Exploratory Work
 
 SELECT * FROM 2014_parcel_baseyear_core.cities_king_paa where city_id = 66;
 SELECT * FROM 2014_parcel_baseyear_core_archive.cities_king_paa_20191107 where city_id in (66);
@@ -33,12 +9,11 @@ SELECT * FROM 2014_parcel_baseyear_core_archive.cities_king_paa_20190701 order b
 SELECT * FROM 2014_parcel_baseyear_core_archive.cities_king_paa_20191107 order by city_id;
 SELECT * FROM 2014_parcel_baseyear_core_archive.cities_20191107 order by city_id;
 
-
 create database v2050_sc_parcel_geog_corres;
 
-drop table v2050_sc_parcel_geog_corres.current_from_2018;
+## Import the Current Version of the Parcels File
 
-create table v2050_sc_parcel_geog_corres.current_from_2018
+create table v2050_sc_parcel_geog_corres.parcel_tract_county_orig_circa_aug2018
 (
 parcel_id integer not null
 ,census_tract bigint not null
@@ -52,9 +27,8 @@ parcel_id integer not null
 );
 
 
-
 LOAD DATA LOCAL INFILE 'L:/vision2050/soundcast/setup/parcel_tract_county.csv'
-INTO TABLE v2050_sc_parcel_geog_corres.current_from_2018
+INTO TABLE v2050_sc_parcel_geog_corres.parcel_tract_county_orig_circa_aug2018
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\r\n'
@@ -76,8 +50,7 @@ city_id
 ,county_id
 ,rg_proposed
 ,count(parcel_id) as parcels
-FROM v2050_sc_parcel_geog_corres.current_from_2018
-#FROM v2050_sc_parcel_geog_corres.current_from_2018
+FROM v2050_sc_parcel_geog_corres.parcel_tract_county_orig_circa_aug2018
 group by
 city_id
 ,city_name
@@ -85,18 +58,14 @@ city_id
 ,rg_proposed
 ;
 
+## Create the SD Version - TFG, RUG and STC & the original DSEIS geographies
 
-alter table 2014_parcel_baseyear_core.cities_king_paa add index(city_id);
-alter table 2014_parcel_baseyear_core.parcels_king_paa add index(city_id);
-
-drop table v2050_sc_parcel_geog_corres.updated_20191119_bazooka;
-
-alter table 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107 add primary key(parcel_id), add index (census_tract_id);
-
-
-create table v2050_sc_parcel_geog_corres.updated_20191119_bazooka
+create table v2050_sc_parcel_geog_corres.parcel_tract_county_sd
 SELECT
 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.parcel_id
+#,2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.x_coord_sp
+#,2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.y_coord_sp
+#,2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.zone_id
 ,2014_parcel_baseyear_core.census_tract.geoid10 as census_tract
 ,2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.city_id
 ,2014_parcel_baseyear_core_archive.cities_king_paa_20190701.county_id
@@ -108,48 +77,51 @@ FROM 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107
 Inner Join 2014_parcel_baseyear_core_archive.cities_king_paa_20190701
 on 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.city_id = 2014_parcel_baseyear_core_archive.cities_king_paa_20190701.city_id
 Inner join 2014_parcel_baseyear_core.census_tract
-On 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.census_tract_id = 2014_parcel_baseyear_core.census_tract.census_tract_id
-;
-
-SELECT * FROM 2014_parcel_baseyear_core.census_tract c;
-
+On 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107.census_tract_id = 2014_parcel_baseyear_core.census_tract.census_tract_id;
 
 
 SELECT
 city_id
 ,city_name
-,county_id
-,rg_proposed
 ,count(parcel_id) as parcels
-#FROM v2050_sc_parcel_geog_corres.current_from_2018
-FROM v2050_sc_parcel_geog_corres.updated_20191119_bazooka
+,rg_proposed
+FROM parcel_tract_county_sd
 group by
 city_id
 ,city_name
-,county_id
 ,rg_proposed
 ;
 
-SELECT * FROM v2050_sc_parcel_geog_corres.updated_20191119_bazooka where city_id = 63;
 
-SELECT * FROM 2014_parcel_baseyear_core.parcels_king_paa where parcel_id in (1253036);
-SELECT * FROM 2014_parcel_baseyear_core.parcels where parcel_id in (1253036);
-SELECT * FROM v2050_sc_parcel_geog_corres.updated_20191119_bazooka where parcel_id in (1253036);
-SELECT * FROM v2050_sc_parcel_geog_corres.current_from_2018 where parcel_id in (1253036);
-SELECT * FROM 2014_parcel_baseyear_core.parcels_bak where parcel_id in (1253036);
 
-SELECT * FROM 2014_parcel_baseyear_core.census_tract c;
+## Create the current PA Version - w Kitsap and Pierce Changes
 
-SELECT count(parcel_id) FROM v2050_sc_parcel_geog_corres.updated_20191119_bazooka u;
+create table v2050_sc_parcel_geog_corres.parcel_tract_county_pa
+SELECT
+2014_parcel_baseyear_core.parcels_king_paa.parcel_id
+,2014_parcel_baseyear_core.census_tract.geoid10 as census_tract
+,2014_parcel_baseyear_core.parcels_king_paa.city_id
+,2014_parcel_baseyear_core.cities_king_paa.county_id
+,2014_parcel_baseyear_core.cities_king_paa.city_name
+,2014_parcel_baseyear_core.cities_king_paa.fips_rgs_id
+,2014_parcel_baseyear_core.cities_king_paa.rgs_id
+,2014_parcel_baseyear_core.cities_king_paa.rg_proposed
+FROM 2014_parcel_baseyear_core.parcels_king_paa
+Inner Join 2014_parcel_baseyear_core.cities_king_paa
+on 2014_parcel_baseyear_core.parcels_king_paa.city_id = 2014_parcel_baseyear_core.cities_king_paa.city_id
+Inner join 2014_parcel_baseyear_core.census_tract
+On 2014_parcel_baseyear_core.parcels_king_paa.census_tract_id = 2014_parcel_baseyear_core.census_tract.census_tract_id
+;
 
 SELECT
 city_id
-FROM 2014_parcel_baseyear_core_archive.parcels_king_paa_20191107
-group by city_id
-order by city_id asc;
+,city_name
+,count(parcel_id) as parcels
+,rg_proposed
+FROM parcel_tract_county_pa
+group by
+city_id
+,city_name
+,rg_proposed
+;
 
-
-SELECT * FROM v2050_sc_parcel_geog_corres.current_from_2018 where city_id in (68);
-SELECT * FROM v2050_sc_parcel_geog_corres.updated_20191119_bazooka where city_id in (118);
-
-select * from v2050_sc_parcel_geog_corres.updated_20191119_bazooka;
