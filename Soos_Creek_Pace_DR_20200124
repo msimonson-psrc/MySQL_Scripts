@@ -1,0 +1,64 @@
+
+#drop database data_request_luv2_soos_creek_pace_cobley;
+
+create database data_request_luv2_soos_creek_pace_cobley_20200124;
+
+drop table if exists data_request_luv2_soos_creek_pace_cobley_20200124.parcels_in_study_area;
+
+create table data_request_luv2_soos_creek_pace_cobley_20200124.parcels_in_study_area
+(
+parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,drainage_basin_id varchar(5)
+,sewer_planning_area_id varchar(5)
+,soos_creek_combo_id integer not null
+,primary key (parcel_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/SoosCreek_Pace_Cobley/parcels_with_soos_creek_areas.csv'
+INTO TABLE data_request_luv2_soos_creek_pace_cobley_20200124.parcels_in_study_area
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,drainage_basin_id
+,sewer_planning_area_id
+,soos_creek_combo_id
+);
+
+SELECT * FROM data_request_luv2_soos_creek_pace_cobley_20200124.parcels_in_study_area p;
+
+drop table if exists data_request_luv2_soos_creek_pace_cobley_20200124.soos_creek_combo;
+
+create table data_request_luv2_soos_creek_pace_cobley_20200124.soos_creek_combo
+(
+soos_creek_combo_id integer not null
+,soos_creek_combo_description varchar(10)
+,primary key (soos_creek_combo_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/SoosCreek_Pace_Cobley/soos_creek_combo.csv'
+INTO TABLE data_request_luv2_soos_creek_pace_cobley_20200124.soos_creek_combo
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+soos_creek_combo_id
+,soos_creek_combo_description
+);
+
+SELECT * FROM data_request_luv2_soos_creek_pace_cobley_20200124.soos_creek_combo s;
