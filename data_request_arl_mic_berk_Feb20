@@ -1,0 +1,83 @@
+create database data_request_luv2lodes_arl_mic_berk_nair_20200207;
+
+drop table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_in_arl_mic_w_flu;
+
+
+create table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_in_arl_mic_w_flu
+(
+parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,arl_flu_id integer not null
+,zone varchar(5) not null
+,min_du_acre float not null
+,max_du_acre float not null
+,min_far float not null
+,max_far float not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/Arl_MIC_BERK_Nair_Feb2020/parcels_in_arl_mic_w_flu.csv'
+INTO TABLE data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_in_arl_mic_w_flu
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,arl_flu_id
+,zone
+,min_du_acre
+,max_du_acre
+,min_far
+,max_far
+);
+
+drop table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic;
+
+
+create table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic
+select * from luv2_lodes_final_outputs_2014.parcels p;
+
+alter table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic
+add primary key(parcel_id);
+
+alter table data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic
+add column arl_mic integer
+,add column arl_flu_id integer;
+
+
+update data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic
+set arl_mic = 0
+,arl_flu_id = 0;
+
+update data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic p
+inner join data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_in_arl_mic_w_flu a
+on p.parcel_id = a.parcel_id
+set p.arl_mic = 1
+,p.arl_flu_id = a.arl_flu_id;
+
+
+
+create table data_request_luv2lodes_arl_mic_berk_nair_20200207.arl_flu
+(
+arl_flu_id integer not null
+,zone varchar(5) not null
+,max_far float not null
+,primary key (arl_flu_id)
+);
+
+Insert into data_request_luv2lodes_arl_mic_berk_nair_20200207.arl_flu (arl_flu_id, zone, max_far)
+Values
+  (10,'AF',0.5)
+  ,(60,'BP',0.75)
+  ,(205,'GC',0.7)
+  ,(219,'GI',0.5)
+  ,(226,'HC',0.75)
+  ,(280,'LI',0.5)
+  ,(490,'P/SP',0)
+;
+
+SELECT * FROM data_request_luv2lodes_arl_mic_berk_nair_20200207.parcels_luv2lodes_arlmic where parcel_id = 26956;
