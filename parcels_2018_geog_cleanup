@@ -1,0 +1,122 @@
+create table parcels_v2
+select * from parcels;
+
+alter table parcels_v2 add primary key(parcel_id);
+
+create index PIN_County
+on parcels_v2 (parcel_id_fips, county_id);
+
+create index PIN_County
+on plbltzbg (PINFIPS, FIPS);
+
+SELECT * FROM census_blocks c;
+
+alter table parcels_v2 add column census_2010_block_id varchar(15);
+
+update parcels_v2 set census_2010_block_id = 'na';
+
+update parcels_v2 p
+inner join plbltzbg c
+on p.parcel_id_fips = c.PINFIPS and p.county_id = c.FIPS
+set p.census_2010_block_id = c.GEOID10;
+
+alter table parcels_v2 add index (census_2010_block_id);
+
+SELECT * FROM census_blocks c;
+
+update parcels_v2 p
+inner join census_blocks c
+on p.census_2010_block_id = c.census_2010_block_id
+set p.census_block_id = c.census_block_id
+,p.census_block_group_id = c.census_block_group_id
+,p.census_tract_id = c.census_tract_id
+;
+
+select
+census_2010_block_id
+,count(parcel_id) as parcels
+from parcels_v2
+group by
+census_2010_block_id;
+
+select
+census_tract_id
+,count(parcel_id) as parcels
+from parcels_v2
+group by
+census_tract_id;
+
+select
+census_block_id
+,count(parcel_id) as parcels
+from parcels_v2
+group by
+census_block_id;
+
+select
+parcel_id
+,x_coord_sp
+,y_coord_sp
+from parcels_v2
+where census_block_id = 0;
+
+
+
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+create table 2018_parcel_baseyear_working.parcels_no_census_joined
+(
+parcel_id integer not null
+,x_coord_sp double not null
+,y_coord_sp double not null
+,GEOID10 varchar (15) not null
+,distance float not null
+,primary key (parcel_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/2018_base_year/parcels_no_census_joined_block.csv'
+INTO TABLE 2018_parcel_baseyear_working.parcels_no_census_joined
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,GEOID10
+,distance
+);
+
+SELECT * FROM parcels_no_census_joined p;
+
+update parcels_v2 p
+inner join parcels_no_census_joined c
+on p.parcel_id = c.parcel_id
+set p.census_2010_block_id = c.GEOID10;
+
+alter table parcels_v2 add index (census_2010_block_id);
+
+SELECT * FROM census_blocks c;
+
+update parcels_v2 p
+inner join census_blocks c
+on p.census_2010_block_id = c.census_2010_block_id
+set p.census_block_id = c.census_block_id
+,p.census_block_group_id = c.census_block_group_id
+,p.census_tract_id = c.census_tract_id
+;
+
+
+update parcels_v2 p
+inner join plbltzbg c
+on p.parcel_id_fips = c.PINFIPS and p.county_id = c.FIPS
+set p.zone_id = c.GEOID10;
+
+;
