@@ -118,5 +118,70 @@ update parcels_v2 p
 inner join plbltzbg c
 on p.parcel_id_fips = c.PINFIPS and p.county_id = c.FIPS
 set p.zone_id = c.GEOID10;
-
 ;
+
+create table 2018_parcel_baseyear_working.parcels_no_taz_joined
+(
+parcel_id integer not null
+,x_coord_sp double not null
+,y_coord_sp double not null
+,TAZ integer (5) not null
+,distance float not null
+,primary key (parcel_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/2018_base_year/parcels_no_taz_joined.csv'
+INTO TABLE 2018_parcel_baseyear_working.parcels_no_taz_joined
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,TAZ
+,distance
+);
+
+SELECT * FROM parcels_no_taz_joined p;
+
+update parcels_v2 p
+inner join parcels_no_taz_joined c
+on p.parcel_id = c.parcel_id
+set p.zone_id = c.TAZ;
+
+SELECT
+census_2010_block_id
+,count(parcel_id) as parcels
+from parcels_v2
+group by
+census_2010_block_id
+;
+
+FROM parcels_v2 p;
+
+SELECT * FROM census_blocks where census_block_group_id is null
+and left(census_2010_block_id,12) = '530530729053'
+#and left(census_2010_block_id,12) = '530530729071'
+;
+
+update census_blocks set census_block_group_id = 2647
+#where left(census_2010_block_id,12) = '530530729053'
+where left(census_2010_block_id,12) = '530530729071'
+;
+
+select * from census_blocks where census_block_group_id is null;
+
+
+SELECT * FROM census_block_groups c;
+
+create table 2018_parcel_baseyear_working.census_tracts select * from 2014_parcel_baseyear_core.census_tracts;
+
+SELECT * FROM census_tracts where geoid10 in ('53053072905','53053072907');
+
+SELECT * FROM census_block_groups where census_2010_block_group_id in ('530530729053','530530729071');
