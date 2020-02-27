@@ -1,0 +1,47 @@
+create table 2018_parcel_baseyear_working.pierce_temp
+SELECT parcel_id
+,parcel_id_fips
+FROM 2018_parcel_baseyear_working.parcels_v2 where left(census_2010_block_id,12)='530530602001';
+
+alter table 2018_parcel_baseyear_working.pierce_temp add primary key(parcel_id), add index(parcel_id_fips);
+
+
+SELECT
+2018_parcel_baseyear_working.pierce_temp.parcel_id
+,2018_parcel_baseyear_working.pierce_temp.parcel_id_fips
+,pierce_2018_parcel_baseyear.prep_buildings_1.propertytype
+,pierce_2018_parcel_baseyear.prep_buildings_1.primaryoccupancycode
+,pierce_2018_parcel_baseyear.prep_buildings_1.primaryoccupancydescription
+,pierce_2018_parcel_baseyear.prep_buildings_1.year_built
+,pierce_2018_parcel_baseyear.prep_buildings_1.builtas_sqft
+,pierce_2018_parcel_baseyear.prep_buildings_1.units
+,pierce_2018_parcel_baseyear.prep_buildings_1.improvement_value
+FROM 2018_parcel_baseyear_working.pierce_temp
+inner join pierce_2018_parcel_baseyear.prep_buildings_1
+on 2018_parcel_baseyear_working.pierce_temp.parcel_id_fips = pierce_2018_parcel_baseyear.prep_buildings_1.parcelnumber
+;
+
+
+SELECT * FROM pierce_2014_parcel_baseyear.building_use_generic_reclass b;
+
+SELECT * FROM building_use_generic_reclass_2014 order by county_building_use_code;
+
+SELECT * FROM building_use_generic_reclass_2018_v1 order by county_building_use_code;
+
+SELECT
+2018_parcel_baseyear_working.pierce_temp.parcel_id
+,2018_parcel_baseyear_working.pierce_temp.parcel_id_fips
+,2018_parcel_baseyear_working.buildings_20200219_hs.year_built
+,2018_parcel_baseyear_working.buildings_20200219_hs.improvement_value
+,2018_parcel_baseyear_working.buildings_20200219_hs.building_type_id
+,2018_parcel_baseyear_working.buildings_20200219_hs.use_code
+,2018_parcel_baseyear_working.buildings_20200219_hs.sqft_per_unit
+,2018_parcel_baseyear_working.buildings_20200219_hs.residential_units
+FROM 2018_parcel_baseyear_working.pierce_temp
+inner join 2018_parcel_baseyear_working.buildings_20200219_hs
+on 2018_parcel_baseyear_working.pierce_temp.parcel_id = 2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id
+;
+
+select * from pierce_2018_parcel_baseyear.prep_buildings_1 #limit 10;
+where parcelnumber = '8950001972';
+where parcelnumber = '8950001895';
