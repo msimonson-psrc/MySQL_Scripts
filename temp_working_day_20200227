@@ -1,0 +1,239 @@
+create table 2018_parcel_baseyear_working.pierce_temp
+SELECT parcel_id
+,parcel_id_fips
+FROM 2018_parcel_baseyear_working.parcels_v2 where left(census_2010_block_id,12)='530530602001';
+
+alter table 2018_parcel_baseyear_working.pierce_temp add primary key(parcel_id), add index(parcel_id_fips);
+
+
+SELECT
+2018_parcel_baseyear_working.pierce_temp.parcel_id
+,2018_parcel_baseyear_working.pierce_temp.parcel_id_fips
+,pierce_2018_parcel_baseyear.prep_buildings_1.propertytype
+,pierce_2018_parcel_baseyear.prep_buildings_1.primaryoccupancycode
+,pierce_2018_parcel_baseyear.prep_buildings_1.primaryoccupancydescription
+,pierce_2018_parcel_baseyear.prep_buildings_1.year_built
+,pierce_2018_parcel_baseyear.prep_buildings_1.builtas_sqft
+,pierce_2018_parcel_baseyear.prep_buildings_1.units
+,pierce_2018_parcel_baseyear.prep_buildings_1.improvement_value
+FROM 2018_parcel_baseyear_working.pierce_temp
+inner join pierce_2018_parcel_baseyear.prep_buildings_1
+on 2018_parcel_baseyear_working.pierce_temp.parcel_id_fips = pierce_2018_parcel_baseyear.prep_buildings_1.parcelnumber
+;
+
+
+SELECT * FROM pierce_2014_parcel_baseyear.building_use_generic_reclass b;
+
+SELECT * FROM building_use_generic_reclass_2014 order by county_building_use_code;
+
+SELECT * FROM building_use_generic_reclass_2018_v1 order by county_building_use_code;
+
+SELECT
+2018_parcel_baseyear_working.pierce_temp.parcel_id
+,2018_parcel_baseyear_working.pierce_temp.parcel_id_fips
+,2018_parcel_baseyear_working.buildings_20200219_hs.year_built
+,2018_parcel_baseyear_working.buildings_20200219_hs.improvement_value
+,2018_parcel_baseyear_working.buildings_20200219_hs.building_type_id
+,2018_parcel_baseyear_working.buildings_20200219_hs.use_code
+,2018_parcel_baseyear_working.buildings_20200219_hs.sqft_per_unit
+,2018_parcel_baseyear_working.buildings_20200219_hs.residential_units
+FROM 2018_parcel_baseyear_working.pierce_temp
+inner join 2018_parcel_baseyear_working.buildings_20200219_hs
+on 2018_parcel_baseyear_working.pierce_temp.parcel_id = 2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id
+where 2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id_fips = '8950001895';
+;
+
+select * from pierce_2018_parcel_baseyear.prep_buildings_1 #limit 10;
+#where parcelnumber = '8950001972';
+where parcelnumber = '8950001895';
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_parcels_1 limit 10;
+
+select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
+#where parcelnumber = '8950001972';
+#where taxparceln = '8950001895'
+where taxparceln = '0221068035'
+;
+
+create table pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference
+select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
+#where parcelnumber = '8950001972';
+#where taxparceln = '8950001895'
+#where taxparcelt = 'Base Parcel'
+where site_addre = 'REFERENCE'
+;
+
+
+select
+parcel_id_fips
+,building_id
+,count(building_id) as records
+,residential_units
+from 2018_parcel_baseyear_working.buildings_20200219_hs where sqft_per_unit <100 and residential_units > 0
+group by parcel_id_fips, building_id, residential_units
+order by records desc
+;
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_buildings_1 order by units desc;
+SELECT * FROM pierce_2018_parcel_baseyear.prep_buildings_1 where parcelnumber = 0319034005;
+
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs where parcel_id = 768275;
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1 p;
+
+select * from pierce_2018_parcel_baseyear.prep_stacked_buildings_1 #limit 10;
+#where parcelnumber = '8950001972';
+where stacked_pin = '8950001895' or base_parcel = '8950001895';
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs where parcel_id_fips = 0319034005;
+
+
+select * from 2018_parcel_baseyear_working.parcels where parcel_id_fips = '8950001895';
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1 where units>1 order by units desc;
+
+create table pierce_2018_parcel_baseyear.mhs_temp
+SELECT
+base_parcel
+,count(stacked_pin) as records
+,sum(units) as tot_units
+,max(units) as max_units
+,min(units) as min_units
+FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1
+group by base_parcel
+order by max_units desc
+;
+
+
+select * from pierce_2018_parcel_baseyear.mhs_temp;
+
+FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1
+;
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs
+#where parcel_id_fips = '2000050011'
+#where parcel_id_fips = '2033110011'
+where parcel_id_fips = '0221068035'
+;
+
+SELECT * FROM pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference t;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add column census_2010_block_group_id varchar(12), add column census_block_group_id int(10);
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add column parcel_id_fips varchar(30);
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs set census_2010_block_group_id = 'na', census_block_group_id = 0;
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs b
+inner join 2018_parcel_baseyear_working.parcels_v2 p
+on b.parcel_id = p.parcel_id
+set b.census_block_group_id = p.census_block_group_id;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add index(census_block_group_id);
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs b
+inner join 2018_parcel_baseyear_working.census_block_groups p
+on b.census_block_group_id = p.census_block_group_id
+set b.census_2010_block_group_id = p.census_2010_block_group_id;
+
+select
+census_2010_block_group_id
+,count(building_id) as records
+from 2018_parcel_baseyear_working.buildings_20200219_hs
+group by census_2010_block_group_id;
+
+select
+parcel_id
+,parcel_id_fips
+,year_built
+,gross_sqft
+,non_residential_sqft
+,stories
+,building_type_id
+,sqft_per_unit
+,residential_units
+,round((gross_sqft-non_residential_sqft)/residential_units,0) as calc_sqft_per_unit
+from 2018_parcel_baseyear_working.buildings_20200219_hs
+#from 2018_parcel_baseyear_working.buildings_for_imputation
+where census_2010_block_group_id = '530330071002'
+order by residential_units desc;
+
+select
+sum(residential_units)
+#,round((gross_sqft-non_residential_sqft)/residential_units,0) as calc_sqft_per_unit
+from 2018_parcel_baseyear_working.buildings_20200219_hs
+where census_2010_block_group_id = '530330237001'
+#order by residential_units desc;
+;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add index(parcel_id);
+
+select
+2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id
+,2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id_fips
+,2018_parcel_baseyear_working.buildings_20200219_hs.building_id
+,2018_parcel_baseyear_working.buildings_20200219_hs.gross_sqft
+,2018_parcel_baseyear_working.buildings_20200219_hs.non_residential_sqft
+,2018_parcel_baseyear_working.buildings_20200219_hs.building_type_id
+,2018_parcel_baseyear_working.buildings_20200219_hs.residential_units
+,2018_parcel_baseyear_working.buildings_20200219_hs.sqft_per_unit
+,2018_parcel_baseyear_working.parcels_v2.x_coord_sp
+,2018_parcel_baseyear_working.parcels_v2.y_coord_sp
+from 2018_parcel_baseyear_working.buildings_20200219_hs
+inner join 2018_parcel_baseyear_working.parcels_v2
+on 2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id = 2018_parcel_baseyear_working.parcels_v2.parcel_id
+where 2018_parcel_baseyear_working.buildings_20200219_hs.year_built>2017
+and 2018_parcel_baseyear_working.buildings_20200219_hs.residential_units>49
+and 2018_parcel_baseyear_working.buildings_20200219_hs.building_type_id in (4,10,12)
+;
+
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '0685970000';
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '2693100068';
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex where Major = '198320' and Minor = '0605';
+
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex;
+
+SELECT * FROM king_2018_parcel_baseyear.king_condo_complex;
+SELECT * FROM king_2018_parcel_baseyear.extr_lookup e;
+
+
+SELECT sum(LivingUnitCount) FROM king_2018_parcel_baseyear.king_residential_building k;
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_apartment_complex k;
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_condo_complex k;
+
+
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 order by sqft_per_unit asc;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_res_1 order by nbrlivingunits desc;
+
+
+SELECT
+count(building_id)
+,sum(residential_units)
+FROM 2018_parcel_baseyear_working.buildings_for_imputation;
+
+select
+parcel_id
+,parcel_id_fips
+,census_2010_block_group_id
+,building_type_id
+,residential_units
+,sqft_per_unit
+,gross_sqft
+,non_residential_sqft
+,year_built
+,stories
+,improvement_value
+from 2018_parcel_baseyear_working.buildings_20200219_hs
+where building_type_id in (4,10,12)
+#order by sqft_per_unit asc
+order by residential_units desc
+;
