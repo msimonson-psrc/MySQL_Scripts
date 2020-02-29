@@ -1,10 +1,11 @@
+##  Tool 1:  Create a temp table of all buildings in a Block Group, then taking those parcels and getting component records from county assessor files to compare
+
 create table 2018_parcel_baseyear_working.pierce_temp
 SELECT parcel_id
 ,parcel_id_fips
 FROM 2018_parcel_baseyear_working.parcels_v2 where left(census_2010_block_id,12)='530530602001';
 
 alter table 2018_parcel_baseyear_working.pierce_temp add primary key(parcel_id), add index(parcel_id_fips);
-
 
 SELECT
 2018_parcel_baseyear_working.pierce_temp.parcel_id
@@ -21,12 +22,9 @@ inner join pierce_2018_parcel_baseyear.prep_buildings_1
 on 2018_parcel_baseyear_working.pierce_temp.parcel_id_fips = pierce_2018_parcel_baseyear.prep_buildings_1.parcelnumber
 ;
 
+## End Tool 1
 
-SELECT * FROM pierce_2014_parcel_baseyear.building_use_generic_reclass b;
-
-SELECT * FROM building_use_generic_reclass_2014 order by county_building_use_code;
-
-SELECT * FROM building_use_generic_reclass_2018_v1 order by county_building_use_code;
+## Tool 2:  Get all buildings from a particular parcel_id_fips by source - draft Buildings and component input tables - and compare
 
 SELECT
 2018_parcel_baseyear_working.pierce_temp.parcel_id
@@ -55,6 +53,8 @@ select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
 where taxparceln = '0221068035'
 ;
 
+## Is REFERENCE code for a stacked parcel?
+
 create table pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference
 select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
 #where parcelnumber = '8950001972';
@@ -74,13 +74,6 @@ group by parcel_id_fips, building_id, residential_units
 order by records desc
 ;
 
-SELECT * FROM pierce_2018_parcel_baseyear.prep_buildings_1 order by units desc;
-SELECT * FROM pierce_2018_parcel_baseyear.prep_buildings_1 where parcelnumber = 0319034005;
-
-
-select * from 2018_parcel_baseyear_working.buildings_20200219_hs where parcel_id = 768275;
-
-SELECT * FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1 p;
 
 select * from pierce_2018_parcel_baseyear.prep_stacked_buildings_1 #limit 10;
 #where parcelnumber = '8950001972';
@@ -108,9 +101,6 @@ order by max_units desc
 
 select * from pierce_2018_parcel_baseyear.mhs_temp;
 
-FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1
-;
-
 select * from 2018_parcel_baseyear_working.buildings_20200219_hs
 #where parcel_id_fips = '2000050011'
 #where parcel_id_fips = '2033110011'
@@ -118,6 +108,8 @@ where parcel_id_fips = '0221068035'
 ;
 
 SELECT * FROM pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference t;
+
+## Adding Census geography fields to Buildings table
 
 alter table 2018_parcel_baseyear_working.buildings_20200219_hs add column census_2010_block_group_id varchar(12), add column census_block_group_id int(10);
 
@@ -143,6 +135,8 @@ census_2010_block_group_id
 from 2018_parcel_baseyear_working.buildings_20200219_hs
 group by census_2010_block_group_id;
 
+##  Core Extract all current table Buildings in a Block Group
+
 select
 parcel_id
 ,parcel_id_fips
@@ -156,8 +150,50 @@ parcel_id
 ,round((gross_sqft-non_residential_sqft)/residential_units,0) as calc_sqft_per_unit
 from 2018_parcel_baseyear_working.buildings_20200219_hs
 #from 2018_parcel_baseyear_working.buildings_for_imputation
-where census_2010_block_group_id = '530330071002'
+where census_2010_block_group_id = '530350927011'
 order by residential_units desc;
+
+## Exploring Kitsap County component tables
+
+Select * from 2018_parcel_baseyear_working.buildings_20200219_hs where county_id = 35 and building_type_id = 12 and residential_units = 5 and gross_sqft < 2000;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_commercial_improvement where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_dwelling limit 10; #where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_parcel where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_valuation where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.main where RP_ACCT_ID = 1431808;
+
+## Exploring Snohomish County component tables
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.prep_buildings_1_20200207
+where lrsnum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units
+#where LRSN = 1016512
+where PUD_Mtr_Ct between 200 and 300
+order by PUD_Mtr_Ct
+;
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.pudresmeter  # Contains PUD_Mtr_Ct
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_master
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_land
+where LRSNum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_improvement
+where LRSNum = '1016512';
+
+SELECT * FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units t;
+SELECT * FROM snohomish_2018_parcel_baseyear.pudresmeter;
 
 select
 sum(residential_units)
@@ -167,7 +203,32 @@ where census_2010_block_group_id = '530330237001'
 #order by residential_units desc;
 ;
 
-alter table 2018_parcel_baseyear_working.buildings_20200219_hs add index(parcel_id);
+
+## Exploring King County component tables
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '0685970000';
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '2693100068';
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex where Major = '198320' and Minor = '0605';
+
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex;
+
+SELECT * FROM king_2018_parcel_baseyear.king_condo_complex;
+SELECT * FROM king_2018_parcel_baseyear.extr_lookup e;
+
+SELECT sum(LivingUnitCount) FROM king_2018_parcel_baseyear.king_residential_building k;
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_apartment_complex k;
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_condo_complex k;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 order by sqft_per_unit asc;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_res_1 order by nbrlivingunits desc;
+
+## Basic Buildings table searches - Large Recent MF developments, All MF ordered by Num Units
 
 select
 2018_parcel_baseyear_working.buildings_20200219_hs.parcel_id
@@ -187,38 +248,6 @@ where 2018_parcel_baseyear_working.buildings_20200219_hs.year_built>2017
 and 2018_parcel_baseyear_working.buildings_20200219_hs.residential_units>49
 and 2018_parcel_baseyear_working.buildings_20200219_hs.building_type_id in (4,10,12)
 ;
-
-
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '0685970000';
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '0685970000';
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '0685970000';
-
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '1822059015';
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '1822059015';
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '2693100068';
-SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex where Major = '198320' and Minor = '0605';
-
-SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex;
-
-SELECT * FROM king_2018_parcel_baseyear.king_condo_complex;
-SELECT * FROM king_2018_parcel_baseyear.extr_lookup e;
-
-
-SELECT sum(LivingUnitCount) FROM king_2018_parcel_baseyear.king_residential_building k;
-SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_apartment_complex k;
-SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_condo_complex k;
-
-
-
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 order by sqft_per_unit asc;
-
-SELECT * FROM king_2018_parcel_baseyear.prep_buildings_res_1 order by nbrlivingunits desc;
-
-
-SELECT
-count(building_id)
-,sum(residential_units)
-FROM 2018_parcel_baseyear_working.buildings_for_imputation;
 
 select
 parcel_id
