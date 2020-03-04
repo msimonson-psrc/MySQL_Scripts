@@ -1,0 +1,198 @@
+# Exploring King County component tables
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '0685970000';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '0685970000';
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 where pin = '1822059015';
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_com_1 where pin = '2693100068';
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex where Major = '198320' and Minor = '0605';
+
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex;
+
+SELECT * FROM king_2018_parcel_baseyear.king_condo_complex;
+SELECT * FROM king_2018_parcel_baseyear.extr_lookup e;
+
+SELECT sum(LivingUnitCount) FROM king_2018_parcel_baseyear.king_residential_building k;
+SELECT * FROM king_2018_parcel_baseyear.king_residential_building limit 20;
+
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_apartment_complex k;
+SELECT sum(UnitCount) FROM king_2018_parcel_baseyear.king_condo_complex k;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_condo_1 order by sqft_per_unit asc;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_res_1 order by nbrlivingunits desc;
+
+
+
+## 3rd Layer Tables
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1 limit 20;
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1_short limit 10;
+SELECT
+use_code
+,use_code_txt
+,count(pin) as records
+FROM king_2018_parcel_baseyear.prep_buildings_1_short
+group by use_code
+;
+
+select * FROM king_2018_parcel_baseyear.extr_lookup where LUType= 118;
+select * FROM king_2018_parcel_baseyear.extr_lookup where LUItem between 340 and 350;
+
+SELECT
+LUType
+,count(LUType) as entries
+FROM king_2018_parcel_baseyear.extr_lookup
+group by LUType ;
+
+SELECT * FROM king_2018_parcel_baseyear.prep_buildings_1_short where use_code = 4;
+Select * from king_2018_parcel_baseyear.prep_parcels_1 where pin = 1453601500;
+
+
+
+## 2nd Layer Tables
+
+SELECT * FROM king_2018_parcel_baseyear.extr_commbldg limit 10;
+SELECT * FROM king_2018_parcel_baseyear.extr_resbldg limit 10;
+
+
+## 1st Layer Tables
+
+SELECT * FROM king_2018_parcel_baseyear.king_real_property_account limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_residential_building limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_parcel limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_commercial_building limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_apartment_complex limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_condo_complex limit 20;
+SELECT * FROM king_2018_parcel_baseyear.king_condo_unit limit 20;
+
+########
+########
+########
+## Exploring Kitsap County component tables
+
+Select * from 2018_parcel_baseyear_working.buildings_20200219_hs where county_id = 35 and building_type_id = 12 and residential_units = 5 and gross_sqft < 2000;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_commercial_improvement where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_dwelling limit 10; #where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_parcel where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_valuation where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.main where RP_ACCT_ID = 1431808;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.main limit 10;
+SELECT * FROM kitsap_2018_parcel_baseyear.land limit 10;
+SELECT * FROM kitsap_2018_parcel_baseyear.flatats limit 10;
+SELECT * FROM kitsap_2018_parcel_baseyear.buildings_assessor limit 10;
+
+
+SELECT * FROM kitsap_2018_parcel_baseyear.prep_buildings limit 10;
+
+#########
+#########
+#########
+
+## Pierce County Digging
+
+select * from pierce_2018_parcel_baseyear.prep_buildings_1 #limit 10;
+#where parcelnumber = '8950001972';
+where parcelnumber = '8950001895';
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_parcels_1 limit 10;
+
+select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
+#where parcelnumber = '8950001972';
+#where taxparceln = '8950001895'
+where taxparceln = '0221068035'
+;
+
+## Is REFERENCE code for a stacked parcel?
+
+create table pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference
+select * from pierce_2018_parcel_baseyear.prep_parcels_1 #limit 10;
+#where parcelnumber = '8950001972';
+#where taxparceln = '8950001895'
+#where taxparcelt = 'Base Parcel'
+where site_addre = 'REFERENCE'
+;
+
+
+select
+parcel_id_fips
+,building_id
+,count(building_id) as records
+,residential_units
+from 2018_parcel_baseyear_working.buildings_20200219_hs where sqft_per_unit <100 and residential_units > 0
+group by parcel_id_fips, building_id, residential_units
+order by records desc
+;
+
+select * from pierce_2018_parcel_baseyear.prep_stacked_buildings_1 #limit 10;
+#where parcelnumber = '8950001972';
+where stacked_pin = '8950001895' or base_parcel = '8950001895';
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs where parcel_id_fips = 0319034005;
+
+
+select * from 2018_parcel_baseyear_working.parcels where parcel_id_fips = '8950001895';
+
+SELECT * FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1 where units>1 order by units desc;
+
+create table pierce_2018_parcel_baseyear.mhs_temp
+SELECT
+base_parcel
+,count(stacked_pin) as records
+,sum(units) as tot_units
+,max(units) as max_units
+,min(units) as min_units
+FROM pierce_2018_parcel_baseyear.prep_stacked_buildings_1
+group by base_parcel
+order by max_units desc
+;
+
+select * from pierce_2018_parcel_baseyear.mhs_temp;
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs
+#where parcel_id_fips = '2000050011'
+#where parcel_id_fips = '2033110011'
+where parcel_id_fips = '0221068035'
+;
+
+SELECT * FROM pierce_2018_parcel_baseyear.temp_mhs_prep_parcels_w_reference t;
+
+#########
+#########
+#########
+
+## Exploring Snohomish County component tables
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.prep_buildings_1_20200207
+where lrsnum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units
+#where LRSN = 1016512
+where PUD_Mtr_Ct between 200 and 300
+order by PUD_Mtr_Ct
+;
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.pudresmeter  # Contains PUD_Mtr_Ct
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_master
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_land
+where LRSNum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_improvement
+where LRSNum = '1016512';
+
+SELECT * FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units t;
+SELECT * FROM snohomish_2018_parcel_baseyear.pudresmeter;
+
