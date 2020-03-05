@@ -1,0 +1,84 @@
+###
+## Editing Buiding_ID field to be unique
+###
+
+
+SELECT
+county_id
+,min(building_id)
+,max(building_id)
+#,count(building_id) as records
+FROM 2018_parcel_baseyear_working.buildings_20200219_hs
+#FROM 2018_parcel_baseyear_working.test
+group by
+county_id
+#order by records desc;
+;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add column orig_building_id integer(11);
+#update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = 0;
+update 2018_parcel_baseyear_working.buildings_20200219_hs set orig_building_id = building_id;
+#update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = 0;
+update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = orig_building_id where county_id = 33;
+update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = orig_building_id+556901 where county_id = 35;
+set @i = 667666;
+update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = @i:=@i+1 where county_id = 53;
+update 2018_parcel_baseyear_working.buildings_20200219_hs set building_id = orig_building_id+993756 where county_id = 61;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs add primary key(building_id);
+
+###
+## Starting to create new building use correspondence table
+###
+
+SELECT use_code_orig, count(building_id) FROM 2018_parcel_baseyear_working.buildings_20200219_hs
+where county_id = 35
+group by use_code_orig;
+
+
+
+SELECT count(building_id) FROM 2018_parcel_baseyear_working.buildings_20200219_hs
+where county_id = 33;
+limit 10;
+
+create table 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+(
+county_id int(11)
+,county_building_use_code Varchar(100)
+,county_building_use_description Varchar(100)
+,generic_building_use_1 Varchar(50)
+,building_type_id int(11)
+,building_type_name Varchar(50)
+)
+;
+
+Insert Into 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+(
+county_id
+,county_building_use_code
+,county_building_use_description
+)
+select
+33 as county_id
+,LUItem as county_building_use_code
+,LUDescription as county_building_use_description
+FROM king_2018_parcel_baseyear.extr_lookup
+where LUType= 118;
+
+Insert Into 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+(
+county_id
+,county_building_use_code
+,county_building_use_description
+)
+Values
+(33,'1','Single Unit Res Bldg')
+,(33,'2','Two Unit Res Bldg')
+,(33,'3','Three Unit Res Bldg')
+,(33,'4','Four Unit Res Bldg')
+,(33,'800','Condo Res')
+,(33,'346','Post Office')
+;
+
+SELECT * FROM 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2 b;
+
