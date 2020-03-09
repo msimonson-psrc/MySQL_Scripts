@@ -1,0 +1,208 @@
+# Exploring Kitsap County component tables
+
+Select * from 2018_parcel_baseyear_working.buildings_20200219_hs where county_id = 35 and building_type_id = 12 and residential_units = 5 and gross_sqft < 2000;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.prep_buildings limit 1000;
+SELECT
+improv_type
+#,bldg_type
+,use_desc
+,count(id) as records
+,sum(residential_units) as hu
+,sum(total_sqft) as tot_sqft
+,sum(improvement_value) as imp_value
+FROM kitsap_2018_parcel_baseyear.prep_buildings
+group by
+improv_type
+#,bldg_type
+,use_desc
+;
+SELECT * FROM kitsap_2018_parcel_baseyear.prep_buildings where use_desc = 'apartments';
+SELECT
+rp_acct_id
+,count(id) as records
+,sum(total_sqft) as total_sqft
+,sum(improvement_value) as imp_value
+FROM kitsap_2018_parcel_baseyear.prep_buildings
+where use_desc = 'apartments'
+group by
+rp_acct_id
+;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.buildings limit 1000;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_commercial_improvement limit 10;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.main limit 10;
+SELECT * FROM kitsap_2018_parcel_baseyear.land limit 10;
+SELECT * FROM kitsap_2018_parcel_baseyear.flatats limit 10; #Flattened Assessed value?
+SELECT * FROM kitsap_2018_parcel_baseyear.buildings_assessor limit 10;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.buildings_assessor where USE_DESC = 5;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_valuation limit 100; #where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_parcel  where RealPropertyAccountID = 1010172;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_dwelling limit 100; #limit 10; #where RealPropertyAccountID = 1431808;
+SELECT * FROM kitsap_2018_parcel_baseyear.kitsap_mobile_home limit 100; #where RealPropertyAccountID = 1431808;
+
+select *
+FROM kitsap_2018_parcel_baseyear.buildings_before_delete_not_in_parcels
+right join kitsap_2018_parcel_baseyear.buildings
+on kitsap_2018_parcel_baseyear.buildings_before_delete_not_in_parcels.building_id = kitsap_2018_parcel_baseyear.buildings.building_id
+where kitsap_2018_parcel_baseyear.buildings_before_delete_not_in_parcels.building_id is null;
+
+SELECT
+stacked_pin
+,count(building_id) as records
+FROM kitsap_2018_parcel_baseyear.buildings_before_delete_not_in_parcels
+group by stacked_pin
+;
+
+SELECT * FROM kitsap_2018_parcel_baseyear.prep_buildings limit 10;
+
+### King
+###
+SELECT
+use_code
+,use_code_txt
+,count(pin) as records
+,sum(residential_units) as hu
+,sum(gross_sqft) as tot_sqft
+,sum(sqft_per_unit*residential_units) as res_sqft_calc
+,sum(improvement_value) as imp_value
+FROM king_2018_parcel_baseyear.prep_buildings_1_short
+group by
+use_code
+,use_code_txt
+;
+
+SELECT
+FROM king_2018_parcel_baseyear.buildings
+limit 1000
+;
+
+#########
+#########
+
+## Exploring Snohomish County component tables
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.prep_buildings_1_20200207
+limit 100;
+where lrsnum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units
+#where LRSN = 1016512
+where PUD_Mtr_Ct between 200 and 300
+order by PUD_Mtr_Ct
+;
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.pudresmeter  # Contains PUD_Mtr_Ct
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_master
+where LRSN = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_land
+where LRSNum = '1016512';
+
+SELECT *
+FROM snohomish_2018_parcel_baseyear.snohomish_improvement
+#where UseCode Is Null;
+limit 1000;
+where LRSNum = '1016512';
+
+SELECT
+ImprType
+,UseCode
+,UseDesc
+,count(PIN) as records
+,sum(FinishedSquareFeet) as SQFT
+,sum(residential_units) as hu
+#FROM snohomish_2018_parcel_baseyear.snohomish_improvement
+FROM snohomish_2018_parcel_baseyear.prep_buildings_1_20200207
+group by
+ImprType
+,UseCode
+,UseDesc
+;
+
+SELECT * FROM snohomish_2018_parcel_baseyear.tmp_pud_stacked_with_pin_units t;
+SELECT * FROM snohomish_2018_parcel_baseyear.pudresmeter;
+
+##
+##  base camp
+###
+
+ELECT
+table_name
+#,Engine
+#,Version
+#,Row_format
+,table_rows
+#,Avg_row_length
+#,Data_length
+#,Max_data_length
+#,Index_length
+#,Data_free
+#,Auto_increment
+,Create_time
+,Update_time
+#,Check_time
+#,table_collation
+#,Checksum
+#,Create_options
+#,table_comment
+FROM information_schema.tables
+WHERE table_schema = '2018_parcel_baseyear_working'
+order by Update_time desc;
+
+SELECT * FROM 2018_parcel_baseyear_working.imputed_buildings limit 10;
+SELECT * FROM 2018_parcel_baseyear_working.buildings_for_imputation limit 10;
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200219_hs limit 10;
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200212_pmc limit 10;
+SELECT * FROM 2018_parcel_baseyear_working.buildings limit 10;
+
+create table 2018_parcel_baseyear_working.buildings_20200219_hs_mhs_edit_copy
+SELECT *
+FROM 2018_parcel_baseyear_working.buildings_20200219_hs
+;
+
+SELECT
+*
+FROM 2018_parcel_baseyear_working.buildings_20200219_hs_mhs_edit_copy
+limit 10
+;
+
+create table 2018_parcel_baseyear_working.temp_mhs_buildings_20200219_hs_usecode_xtab_summary
+SELECT
+county_id
+,use_code_orig
+,count(building_id) as records
+,sum(residential_units) as hu
+,sum(gross_sqft) as total_sqft
+,sum(non_residential_sqft) as nonres_sqft
+FROM 2018_parcel_baseyear_working.buildings_20200219_hs_mhs_edit_copy
+#FROM 2018_parcel_baseyear_working.buildings_20200219_hs_mhs_edit_copy
+group by
+county_id
+,use_code_orig
+order by
+county_id
+,use_code_orig
+;
+
+alter table
+
+SELECT * FROM 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2 b;
+
+
+
+
+
+
+
