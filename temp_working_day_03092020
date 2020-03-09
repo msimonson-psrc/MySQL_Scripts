@@ -1,0 +1,131 @@
+SELECT * FROM 2018_parcel_baseyear_working.building_use_generic_reclass_2014 b;
+
+SELECT
+building_type_id
+#generic_building_use_1
+,generic_building_use_2
+#FROM 2018_parcel_baseyear_working.building_use_generic_reclass_2014
+from 2018_parcel_baseyear_working.building_use_generic_reclass_2014
+Group by
+building_type_id
+#generic_building_use_1
+,generic_building_use_2
+;
+
+
+
+
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200219_hs limit 10;
+
+SELECT * FROM 2014_parcel_baseyear_core.generic_land_use_types g;
+
+
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+drop table if exists 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2;
+
+create table 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+(
+record_id integer not null
+,county_id integer not null
+,county_building_use_code varchar(75) not null
+,county_building_use_description varchar(75) not null
+,generic_building_use_1 integer not null
+,building_type_id integer not null
+,building_type_name varchar(50) not null
+,primary key (record_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/2018_base_year/QC_Work/Proposed_Revised_Building_Use_Code_03092020.txt'
+INTO TABLE 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+FIELDS TERMINATED BY '\t'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+record_id
+,county_id
+,county_building_use_code
+,county_building_use_description
+,generic_building_use_1
+,building_type_id
+,building_type_name
+);
+
+SELECT * FROM 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2 b;
+
+create table 2018_parcel_baseyear_working.buildings_20200219_hs_mhs
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200219_hs;
+
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs_mhs add primary key(building_id);
+alter table 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2 add index (county_id,county_building_use_code);
+alter table 2018_parcel_baseyear_working.buildings_20200219_hs_mhs add index (county_id, use_code_orig);
+
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs limit 1000;
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs_mhs set building_type_id = 0;
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs_mhs
+inner join 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2
+on 2018_parcel_baseyear_working.buildings_20200219_hs_mhs.county_id = 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2.county_id
+and 2018_parcel_baseyear_working.buildings_20200219_hs_mhs.use_code_orig = 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2.county_building_use_code
+set 2018_parcel_baseyear_working.buildings_20200219_hs_mhs.building_type_id = 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2.building_type_id
+;
+
+select
+building_type_id
+,count(building_id) as records
+from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs
+group by
+building_type_id
+;
+
+
+select *
+from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs where use_code_orig = '5' and county_id = 61
+order by
+county_id
+,residential_units
+desc;
+
+select
+residential_units
+,sum(gross_sqft) as sqft
+,count(building_id) as records
+#,sum(gross_sqft)/residential_units as sqft per unit
+from 2018_parcel_baseyear_working.buildings_20200219_hs where use_code_orig = '863'
+#from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs where use_code_orig = '5' and county_id = 61
+group by
+residential_units
+order by
+residential_units
+desc
+;
+
+update 2018_parcel_baseyear_working.buildings_20200219_hs_mhs
+set residential_units = 1 where residential_units = 5 and use_code_orig = '5' and county_id in (35,61);
+
+select
+county_id
+,sum(gross_sqft) as gross
+,sum(residential_units * sqft_per_unit) as res
+,sum(non_residential_sqft) as nonres
+from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs
+group by
+county_id;
+
+
+
+
+SELECT parcel_id FROM 2018_parcel_baseyear_working.parcels_v2 where parcel_sqft =0;
+
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200219_hs_mhs b;
+
+create table sandbox_mhs_2018.buildings_20200219_hs_mhs_playcopy
+select * from 2018_parcel_baseyear_working.buildings_20200219_hs_mhs;
