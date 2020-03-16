@@ -1,0 +1,86 @@
+create database data_request_pace_weller_valleyview_20200315;
+
+drop table if exists data_request_pace_weller_valleyview_20200315.parcels_in_vv_basin;
+
+
+create table data_request_pace_weller_valleyview_20200315.parcels_in_vv_basin
+(
+parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,vv_basin_id integer not null
+,vv_basin_name varchar(30) not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/PACE_Weller_ValleyView/parcels_in_vv_basin.csv'
+INTO TABLE data_request_pace_weller_valleyview_20200315.parcels_in_vv_basin
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,vv_basin_id
+,vv_basin_name
+);
+
+select * from data_request_pace_weller_valleyview_20200315.parcels_in_vv_basin;
+
+####
+# vv_basin_id	vv_basin_name	vv_major_basin	vv_basin_full_class
+####
+
+drop table if exists data_request_pace_weller_valleyview_20200315.vv_basin;
+
+
+create table data_request_pace_weller_valleyview_20200315.vv_basin
+(
+vv_basin_id integer not null
+,vv_basin_name varchar(30) not null
+,vv_major_basin varchar (30) not null
+,vv_basin_full_class varchar(50) not null
+,primary key (vv_basin_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/PACE_Weller_ValleyView/vv_basin.csv'
+INTO TABLE data_request_pace_weller_valleyview_20200315.vv_basin
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+vv_basin_id
+,vv_basin_name
+,vv_major_basin
+,vv_basin_full_class
+);
+
+select * from data_request_pace_weller_valleyview_20200315.vv_basin;
+
+create table data_request_pace_weller_valleyview_20200315.parcels_w_vv_basin
+SELECT * FROM luv2_lodes_final_outputs_2014.parcels;
+
+alter table data_request_pace_weller_valleyview_20200315.parcels_w_vv_basin
+add primary key(parcel_id)
+,add column vv_basin_id integer
+;
+
+update data_request_pace_weller_valleyview_20200315.parcels_w_vv_basin
+set vv_basin_id = 0;
+
+update data_request_pace_weller_valleyview_20200315.parcels_w_vv_basin w
+inner join data_request_pace_weller_valleyview_20200315.parcels_in_vv_basin i
+on w.parcel_id = i.parcel_id
+set w.vv_basin_id = i.vv_basin_id;
+
+select
+vv_basin_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+from data_request_pace_weller_valleyview_20200315.parcels_w_vv_basin
+group by
+vv_basin_id
+;
