@@ -1,0 +1,71 @@
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+create table 2018_parcel_baseyear_working.lodes_2017_02252020
+(
+job_id integer not null
+,sector_id integer not null
+,home_based_status integer not null
+,building_id integer not null
+,census_block_id integer not null
+,primary key (job_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'J:/Projects/2018_base_year/Employment/jobs.csv'
+INTO TABLE 2018_parcel_baseyear_working.lodes_2017_02252020
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+job_id
+,sector_id
+,home_based_status
+,building_id
+,census_block_id
+);
+
+alter table 2018_parcel_baseyear_working.lodes_2017_02252020
+add column census_2010_block_id varchar(25)
+,add column census_block_group_id integer
+,add column census_2010_block_group_id varchar(25)
+;
+
+
+update 2018_parcel_baseyear_working.lodes_2017_02252020
+set census_2010_block_id = 'na'
+,census_block_group_id = 0
+,census_2010_block_group_id = 'na'
+;
+
+alter table 2018_parcel_baseyear_working.lodes_2017_02252020 add index(census_block_group_id);
+
+update 2018_parcel_baseyear_working.lodes_2017_02252020 l
+inner join 2018_parcel_baseyear_working.census_blocks b
+on l.census_block_id = b.census_block_id
+set l.census_2010_block_id = b.census_2010_block_id
+,l.census_block_group_id = b.census_block_group_id
+;
+
+update 2018_parcel_baseyear_working.lodes_2017_02252020 l
+inner join 2018_parcel_baseyear_working.census_block_groups b
+on l.census_block_group_id = b.census_block_group_id
+set l.census_2010_block_group_id = b.census_2010_block_group_id
+;
+
+select
+2018_parcel_baseyear_working.census_block_groups.census_block_group_id
+,2018_parcel_baseyear_working.census_block_groups.census_2010_block_group_id
+,count(2018_parcel_baseyear_working.lodes_2017_02252020.job_id) as jobs
+from 2018_parcel_baseyear_working.census_block_groups
+right join 2018_parcel_baseyear_working.lodes_2017_02252020
+on 2018_parcel_baseyear_working.census_block_groups.census_block_group_id = 2018_parcel_baseyear_working.lodes_2017_02252020.census_block_group_id
+group by
+census_block_group_id
+,census_2010_block_group_id
+;
