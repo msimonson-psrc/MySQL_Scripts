@@ -1,0 +1,281 @@
+SELECT * FROM parcels_with_built_2014_2035 limit 10;
+
+SELECT * FROM parcels_with_built_2014_2035 where land_use_type_id_2014 != land_use_type_id_2035;
+
+SELECT count(parcel_id) as parcels FROM luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035;
+
+SELECT count(parcel_id) FROM data_request_sea_ind_areas_ca_20200315.parcels_w_sea_ind_areas p;
+
+alter table luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035
+add column sea_ind_areas_id integer;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035
+set sea_ind_areas_id = 0;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035 p
+inner join data_request_sea_ind_areas_ca_20200315.parcels_w_sea_ind_areas s
+on p.parcel_id = s.parcel_id
+set p.sea_ind_areas_id = s.sea_ind_areas_id;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035 p
+inner join luv2_lodes_final_outputs_2035.parcels_orig_to_run o
+on p.parcel_id = o.parcel_id
+set p.land_use_type_id_2035 = o.land_use_type_id;
+
+SELECT * FROM 2014_parcel_baseyear_core.building_types b;
+
+alter table luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035
+add column gen_land_use_type_id_2014 integer
+,add column gen_land_use_type_id_2035 integer;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035
+set gen_land_use_type_id_2014 = 0
+,gen_land_use_type_id_2035 = 0;
+
+alter table luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035
+add index (land_use_type_id_2014)
+,add index (land_use_type_id_2035);
+
+SELECT * FROM 2014_parcel_baseyear_core.generic_land_use_types g;
+SELECT * FROM 2014_parcel_baseyear_core.land_use_types l;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035 p
+inner join 2014_parcel_baseyear_core.land_use_types g
+on p.land_use_type_id_2014 = g.land_use_type_id
+set p.gen_land_use_type_id_2014 = g.generic_land_use_type_id
+;
+
+update luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035 p
+inner join 2014_parcel_baseyear_core.land_use_types g
+on p.land_use_type_id_2035 = g.land_use_type_id
+set p.gen_land_use_type_id_2035 = g.generic_land_use_type_id
+;
+
+SELECT * FROM 2014_parcel_baseyear_core.employment_adhoc_sector_groups e;
+
+SELECT * FROM psrc_2014_parcel_baseyear.employment_adhoc_sector_group_definitions e;
+
+update jobs set parcel_id = 0;
+
+alter table jobs add index(building_id);
+
+update jobs j
+inner join buildings b
+on j.building_id = b.building_id
+set j.parcel_id = b.parcel_id;
+
+alter table jobs add index(parcel_id);
+alter table jobs add column sea_ind_areas_id integer;
+update jobs set sea_ind_areas_id = 0;
+
+update jobs j
+inner join data_request_sea_ind_areas_ca_20200315.parcels_w_sea_ind_areas s
+on j.parcel_id = s.parcel_id
+set j.sea_ind_areas_id = s.sea_ind_areas_id
+;
+
+SELECT
+parcel_id
+,count(job_id) as jobs
+FROM jobs
+group by parcel_id ;
+
+
+## Sample CSV import scripts
+
+#  Import for MPD records
+
+SELECT * FROM data_request_sea_ind_areas_ca_20200315.sea_ind_areas s;
+
+drop table if exists data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2014;
+
+create table data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2014
+(
+parcel_id integer not null
+,all_jobs integer not null
+,res_con integer not null
+,manuf_wtu integer not null
+,retail integer not null
+,fires integer not null
+,gov integer not null
+,edu integer not null
+,primary key (parcel_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'C:/opusgit/urbansim_data/data/psrc_parcel/runs/LUV2_LODES_dr_copy/indicators/parcel__dataset_table__parcel_flattened__2014.csv'
+INTO TABLE data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2014
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,all_jobs
+,res_con
+,manuf_wtu
+,retail
+,fires
+,gov
+,edu
+);
+
+select * from data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2014 limit 10000;
+
+drop table if exists data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2035;
+
+create table data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2035
+(
+parcel_id integer not null
+,all_jobs integer not null
+,res_con integer not null
+,manuf_wtu integer not null
+,retail integer not null
+,fires integer not null
+,gov integer not null
+,edu integer not null
+,primary key (parcel_id)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+
+
+LOAD DATA LOCAL INFILE 'C:/opusgit/urbansim_data/data/psrc_parcel/runs/LUV2_LODES_dr_copy/indicators/parcel__dataset_table__parcel_flattened__2035.csv'
+INTO TABLE data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2035
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+parcel_id
+,all_jobs
+,res_con
+,manuf_wtu
+,retail
+,fires
+,gov
+,edu
+);
+
+create table data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035
+select * from luv2_lodes_final_outputs_2014.parcels_with_built_2014_2035;
+
+alter table data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035 add primary key(parcel_id);
+
+alter table data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035
+add column all_jobs_14 int
+,add column res_con_14 int
+,add column manuf_wtu_14 int
+,add column retail_14 int
+,add column fires_14 int
+,add column gov_14 int
+,add column edu_14 int
+,add column all_jobs_35 int
+,add column res_con_35 int
+,add column manuf_wtu_35 int
+,add column retail_35 int
+,add column fires_35 int
+,add column gov_35 int
+,add column edu_35 int
+;
+
+update data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035
+set all_jobs_14 = 0
+,res_con_14 = 0
+,manuf_wtu_14 = 0
+,retail_14 = 0
+,fires_14  = 0
+,gov_14  = 0
+,edu_14  = 0
+,all_jobs_35  = 0
+,res_con_35  = 0
+,manuf_wtu_35  = 0
+,retail_35  = 0
+,fires_35  = 0
+,gov_35  = 0
+,edu_35  = 0
+;
+
+update data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035 p
+inner join data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2014 j
+on p.parcel_id = j.parcel_id
+set p.all_jobs_14 = j.all_jobs
+,p.res_con_14 = j.res_con
+,p.manuf_wtu_14 = j.manuf_wtu
+,p.retail_14 = j.retail
+,p.fires_14  = j.fires
+,p.gov_14  = j.gov
+,p.edu_14  = j.edu
+;
+
+update data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035 p
+inner join data_request_sea_ind_areas_ca_20200315.jobs_by_sector_parcel_2035 j
+on p.parcel_id = j.parcel_id
+set p.all_jobs_35 = j.all_jobs
+,p.res_con_35 = j.res_con
+,p.manuf_wtu_35 = j.manuf_wtu
+,p.retail_35 = j.retail
+,p.fires_35  = j.fires
+,p.gov_35  = j.gov
+,p.edu_35  = j.edu
+;
+
+##########========================
+
+select
+sea_ind_areas_id
+,gen_land_use_type_id_2014
+,gen_land_use_type_id_2035
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+
+,sum(jobs_14) as jobs_14
+,sum(jobs_35) as jobs_35
+,sum(job_chg_14_35) as job_chg
+
+,sum(households_14) as hh_14
+,sum(households_35) as hh_35
+,sum(hh_chg_14_35) as hh_chg
+
+,sum(hu_14) as hu_14
+,sum(hu_35) as hu_35
+,sum(hu_chg_14_35) as hu_chg
+
+,sum(nonres_sqft_14) as sqft_14
+,sum(nonres_sqft_35) as sqft_35
+,sum(nonres_sqft_chg_14_35) as sqft_chg
+
+,sum(all_jobs_14) as all_jobs_14
+,sum(res_con_14) as res_con_14
+,sum(manuf_wtu_14) as manuf_wtu_14
+,sum(retail_14) as retail_14
+,sum(fires_14) as fires_14
+,sum(gov_14) as gov_14
+,sum(edu_14) as edu_14
+
+,sum(all_jobs_35) as all_jobs_35
+,sum(res_con_35) as res_con_35
+,sum(manuf_wtu_35) as manuf_wtu_35
+,sum(retail_35) as retail_35
+,sum(fires_35) as fires_35
+,sum(gov_35) as gov_35
+,sum(edu_35) as edu_35
+
+from data_request_sea_ind_areas_ca_20200315.luv2_lodes_parcels_with_built_2014_2035
+where sea_ind_areas_id>0
+group by
+sea_ind_areas_id
+,gen_land_use_type_id_2014
+,gen_land_use_type_id_2035
+;
+
+
+
+
+
+
+
