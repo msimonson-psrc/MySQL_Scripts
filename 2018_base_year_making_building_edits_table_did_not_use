@@ -1,0 +1,166 @@
+select
+b.county_id
+,b.parcel_id
+,b.building_id
+,b.parcel_id_fips
+,b.gross_sqft
+,b.non_residential_sqft
+,b.improvement_value
+,b.building_type_id
+,b.residential_units
+,b.sqft_per_unit
+,b.use_code
+,u.county_building_use_description
+#from 2018_parcel_baseyear_working.buildings_20200311_mhs
+from 2018_parcel_baseyear_working.imputed_buildings_20200311 b
+inner join 2018_parcel_baseyear_working.building_use_generic_reclass_2018_v2 u
+on b.use_code = u.county_building_use_code
+and b.county_id = u.county_id
+where
+#census_block_group_id = 1494
+#census_block_group_id = 2042
+census_block_group_id = 957
+and residential_units = 770
+#and b.parcel_id_fips in ('3848500781')
+#and building_type_id in (3)
+order by b.building_type_id, gross_sqft desc
+;
+
+
+drop table 2018_parcel_baseyear_working.building_edits;
+
+create table 2018_parcel_baseyear_working.building_edits
+SELECT * FROM 2018_parcel_baseyear_working.buildings_20200311_mhs
+where parcel_id_fips in (
+'7804190000'
+,'7804220000'
+,'7804230000'
+,'7804240000'
+,'7804180000'
+,'7804210000'
+,'7804170000'
+);
+
+alter table 2018_parcel_baseyear_working.building_edits
+add primary key(building_id)
+,add index(parcel_id)
+,add column special_case_id integer
+,add column orig_residential_units integer
+;
+
+update 2018_parcel_baseyear_working.building_edits
+set special_case_id = 0
+,orig_residential_units = 0
+;
+update 2018_parcel_baseyear_working.building_edits
+set special_case_id = 1
+,orig_residential_units = residential_units
+where parcel_id_fips in (
+'7804190000'
+,'7804220000'
+,'7804230000'
+,'7804240000'
+,'7804180000'
+,'7804210000'
+,'7804170000'
+);
+
+SELECT @sum_imp_value:=sum(improvement_value) FROM 2018_parcel_baseyear_working.building_edits
+where parcel_id_fips in (
+'7804190000'
+,'7804220000'
+,'7804230000'
+,'7804240000'
+,'7804180000'
+,'7804210000'
+,'7804170000'
+);
+
+Update 2018_parcel_baseyear_working.building_edits
+set residential_units = round(improvement_value/@sum_imp_value*orig_residential_units,0)
+where parcel_id_fips in (
+'7804190000'
+,'7804220000'
+,'7804230000'
+,'7804240000'
+,'7804180000'
+,'7804210000'
+,'7804170000'
+);
+
+Update 2018_parcel_baseyear_working.building_edits
+set gross_sqft = round(sqft_per_unit*residential_units,0)
+where parcel_id_fips in (
+'7804190000'
+,'7804220000'
+,'7804230000'
+,'7804240000'
+,'7804180000'
+,'7804210000'
+,'7804170000'
+);
+
+insert into 2018_parcel_baseyear_working.building_edits (
+	parcel_id,
+	building_id,
+	gross_sqft,
+	non_residential_sqft,
+	year_built,
+	parcel_id_fips,
+	job_capacity,
+	land_area,
+	building_quality_id,
+	improvement_value,
+	stories,
+	tax_exempt,
+	building_type_id,
+	template_id,
+	sqft_per_unit,
+	residential_units,
+	not_demolish,
+	use_code,
+	county_id,
+	use_code_orig,
+	orig_building_id,
+	census_block_group_id,
+	special_case_id,
+	orig_residential_units
+)
+select
+	parcel_id,
+	building_id,
+	gross_sqft,
+	non_residential_sqft,
+	year_built,
+	parcel_id_fips,
+	job_capacity,
+	land_area,
+	building_quality_id,
+	improvement_value,
+	stories,
+	tax_exempt,
+	building_type_id,
+	template_id,
+	sqft_per_unit,
+	residential_units,
+	not_demolish,
+	use_code,
+	county_id,
+	use_code_orig,
+	orig_building_id,
+	census_block_group_id,
+  5,
+  residential_units
+FROM 2018_parcel_baseyear_working.buildings_20200311_mhs
+where parcel_id_fips in (
+  '1172979'
+);
+
+
+update 2018_parcel_baseyear_working.building_edits
+set special_case_id = 6 where parcel_id_fips in ('1172979');
+
+
+
+
+select * from 2018_parcel_baseyear_working.building_edits;
