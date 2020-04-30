@@ -16,6 +16,8 @@ proposal_id integer not null
 
 ## If your imported text fields include little paragraph signs and / or line breaks try this:
 ## LINES TERMINATED BY '\r\n'
+## Tab delimited use '\t'
+## Good Stack Overflow discussion at https://stackoverflow.com/questions/13579810/how-to-import-data-from-text-file-to-mysql-database
 
 
 LOAD DATA LOCAL INFILE 'J:/Projects/UrbanSim/NEW_DIRECTORY/Inputs/base_year_cache/mpds/Reapply_Tehaleh_April2018.csv'
