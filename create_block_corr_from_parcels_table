@@ -1,0 +1,186 @@
+## Script to create census_block correspondence files from the parcels table
+## By city_id and by location in or out of a TOD area.
+## Using Gross SQFT as the weight, all or nothing based on where the biggest part of the block lies.
+## Note had to use permanent rather than temporary tables, then delete at the end, because of a complicated ordinal ranking query plundered from stack overflow
+## MHS 6-19-20
+
+-- ====================================
+-- ====================================
+-- Start of the Block to City Corr work
+-- ====================================
+-- ====================================
+
+# Create a copy of the final buildings table so I don't mess up the original one
+create table v2050_parcel_capacity.copy_parcels_king_paa_final_alt
+select * from 2014_parcel_baseyear_core.parcels_king_paa;
+
+# Create a reference table, all blocks with their total gross sqft area.  Had to use BigInt for the variable due to Int limits
+drop table if exists v2050_parcel_capacity.blocks_parcels_area;
+create table v2050_parcel_capacity.blocks_parcels_area
+SELECT
+census_block_id
+,sum(gross_sqft) as total_gross_area
+,count(parcel_id) as parcels
+FROM v2050_parcel_capacity.copy_parcels_king_paa_final_alt
+group by census_block_id;
+alter table v2050_parcel_capacity.blocks_parcels_area add primary key(census_block_id);
+
+# Sum area by census_block and city_id
+drop table if exists v2050_parcel_capacity.blocks_cities_correspondence_working;
+create table v2050_parcel_capacity.blocks_cities_correspondence_working
+select
+census_block_id
+,city_id
+,sum(gross_sqft) as gross_area
+from v2050_parcel_capacity.copy_parcels_king_paa_final_alt
+group by census_block_id
+,city_id;
+alter table v2050_parcel_capacity.blocks_cities_correspondence_working add index(census_block_id), add index(city_id);
+
+# Add columns for each block's total area and the percent of total that particular city_x_block portion represents
+alter table v2050_parcel_capacity.blocks_cities_correspondence_working add column total_gross_area bigint(11), add column percent_of_total float;
+update v2050_parcel_capacity.blocks_cities_correspondence_working set total_gross_area = 0, percent_of_total = 0;
+
+# copy into the working table the block total area, and calculate % of total
+update v2050_parcel_capacity.blocks_cities_correspondence_working a
+inner join v2050_parcel_capacity.blocks_parcels_area b
+on a.census_block_id = b.census_block_id
+set a.total_gross_area = b.total_gross_area;
+update v2050_parcel_capacity.blocks_cities_correspondence_working set percent_of_total = gross_area/total_gross_area;
+
+# Plundered code that groups and ranks the block x city portions ordinally
+## Adapted from https://stackoverflow.com/questions/532878/how-to-perform-grouped-ranking-in-mysql
+drop table if exists v2050_parcel_capacity.blocks_cities_corr_ranks;
+create temporary table v2050_parcel_capacity.blocks_cities_corr_ranks
+SELECT g1.city_id
+     , g1.census_block_id
+     , g1.percent_of_total
+     , COUNT(*) AS rank
+  FROM v2050_parcel_capacity.blocks_cities_correspondence_working AS g1
+  JOIN v2050_parcel_capacity.blocks_cities_correspondence_working AS g2
+    ON (g2.percent_of_total, g2.city_id) >= (g1.percent_of_total, g1.city_id)
+   AND g1.census_block_id = g2.census_block_id
+ GROUP BY g1.city_id
+        , g1.census_block_id
+        , g1.percent_of_total
+ ORDER BY g1.census_block_id
+        , rank;
+alter table v2050_parcel_capacity.blocks_cities_corr_ranks add index(census_block_id), add index(city_id);
+
+# Transfer the ranks from the temp table to the primary working table
+alter table v2050_parcel_capacity.blocks_cities_correspondence_working add column rank int(11);
+update v2050_parcel_capacity.blocks_cities_correspondence_working set rank=0;
+update v2050_parcel_capacity.blocks_cities_correspondence_working a
+inner join v2050_parcel_capacity.blocks_cities_corr_ranks b
+on a.census_block_id = b.census_block_id
+and a.city_id = b.city_id
+set a.rank = b.rank;
+
+# Create the final correspondence table by only extracting records with Rank = 1
+drop table if exists v2050_parcel_capacity.blocks_cities_correspondence;
+create table v2050_parcel_capacity.blocks_cities_correspondence
+select census_block_id, city_id
+from v2050_parcel_capacity.blocks_cities_correspondence_working
+where rank=1;
+alter table v2050_parcel_capacity.blocks_cities_correspondence add index(census_block_id), add index(city_id);
+
+# Drop the tables created along the way, no longer needed
+drop table if exists v2050_parcel_capacity.blocks_cities_correspondence_working;
+drop table if exists v2050_parcel_capacity.blocks_parcels_area;
+
+## QC Check of the only census_block_to lie in 4 different cities.
+select * from v2050_parcel_capacity.blocks_cities_corr_ranks where census_block_id = 18383;
+
+-- ====================================
+-- ====================================
+-- End of the Block to City Corr work
+-- ====================================
+-- ====================================
+
+-- ====================================
+-- ====================================
+-- Start of the Block to TOD Corr work
+-- ====================================
+-- ====================================
+
+# Add a column assigning a boolean for any parcel where tod_id>0 (in an hct area)
+alter table v2050_parcel_capacity.copy_parcels_king_paa_final_alt add column tod_in_out_bool int(11);
+update v2050_parcel_capacity.copy_parcels_king_paa_final_alt set tod_in_out_bool = 0;
+update v2050_parcel_capacity.copy_parcels_king_paa_final_alt set tod_in_out_bool = 1 where tod_id>0;
+
+# Create a reference table, all blocks with their total gross sqft area.  Had to use BigInt for the variable due to Int limits
+drop table if exists v2050_parcel_capacity.blocks_parcels_area;
+create table v2050_parcel_capacity.blocks_parcels_area
+SELECT
+census_block_id
+,sum(gross_sqft) as total_gross_area
+,count(parcel_id) as parcels
+FROM v2050_parcel_capacity.copy_parcels_king_paa_final_alt
+group by census_block_id;
+alter table v2050_parcel_capacity.blocks_parcels_area add primary key(census_block_id);
+
+# Sum area by census_block and the tod in or out variable
+drop table if exists v2050_parcel_capacity.blocks_tod_correspondence_working;
+create table v2050_parcel_capacity.blocks_tod_correspondence_working
+select
+census_block_id
+,tod_in_out_bool
+,sum(gross_sqft) as gross_area
+from v2050_parcel_capacity.copy_parcels_king_paa_final_alt
+group by census_block_id
+,tod_in_out_bool;
+
+# Add columns for each block's total area and the percent of total that particular tod_x_block portion represents
+alter table v2050_parcel_capacity.blocks_tod_correspondence_working add index(census_block_id), add index(tod_in_out_bool);
+alter table v2050_parcel_capacity.blocks_tod_correspondence_working add column total_gross_area bigint(11), add column percent_of_total float;
+
+# copy into the working table the block total area, and calculate % of total
+update v2050_parcel_capacity.blocks_tod_correspondence_working set total_gross_area = 0, percent_of_total = 0;
+update v2050_parcel_capacity.blocks_tod_correspondence_working a
+inner join v2050_parcel_capacity.blocks_parcels_area b
+on a.census_block_id = b.census_block_id
+set a.total_gross_area = b.total_gross_area;
+update v2050_parcel_capacity.blocks_tod_correspondence_working set percent_of_total = gross_area/total_gross_area;
+
+# Plundered code that groups and ranks the block x tod portions ordinally
+## Adapted from https://stackoverflow.com/questions/532878/how-to-perform-grouped-ranking-in-mysql
+drop table if exists v2050_parcel_capacity.blocks_tod_corr_ranks;
+create temporary table v2050_parcel_capacity.blocks_tod_corr_ranks
+SELECT g1.tod_in_out_bool
+     , g1.census_block_id
+     , g1.percent_of_total
+     , COUNT(*) AS rank
+  FROM v2050_parcel_capacity.blocks_tod_correspondence_working AS g1
+  JOIN v2050_parcel_capacity.blocks_tod_correspondence_working AS g2
+    ON (g2.percent_of_total, g2.tod_in_out_bool) >= (g1.percent_of_total, g1.tod_in_out_bool)
+   AND g1.census_block_id = g2.census_block_id
+ GROUP BY g1.tod_in_out_bool
+        , g1.census_block_id
+        , g1.percent_of_total
+ ORDER BY g1.census_block_id
+        , rank;
+alter table v2050_parcel_capacity.blocks_tod_corr_ranks add index(census_block_id), add index(tod_in_out_bool);
+
+# Transfer the ranks from the temp table to the primary working table
+alter table v2050_parcel_capacity.blocks_tod_correspondence_working add column rank int(11);
+update v2050_parcel_capacity.blocks_tod_correspondence_working set rank=0;
+update v2050_parcel_capacity.blocks_tod_correspondence_working a
+inner join v2050_parcel_capacity.blocks_tod_corr_ranks b
+on a.census_block_id = b.census_block_id
+and a.tod_in_out_bool = b.tod_in_out_bool
+set a.rank = b.rank;
+
+# Create the final correspondence table by only extracting records with Rank = 1
+drop table if exists v2050_parcel_capacity.blocks_tod_correspondence;
+create table v2050_parcel_capacity.blocks_tod_correspondence
+select census_block_id, tod_in_out_bool
+from v2050_parcel_capacity.blocks_tod_correspondence_working
+where rank=1;
+alter table v2050_parcel_capacity.blocks_tod_correspondence add index(census_block_id), add index(tod_in_out_bool);
+
+# Drop the tables created along the way, no longer needed
+drop table if exists v2050_parcel_capacity.blocks_tod_correspondence_working;
+drop table if exists v2050_parcel_capacity.blocks_parcels_area;
+
+## QC Check of a census_block with parcels both in and out of TOD areas.
+select * from v2050_parcel_capacity.blocks_tod_corr_ranks where census_block_id = 11;
