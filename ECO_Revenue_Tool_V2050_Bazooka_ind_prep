@@ -1,0 +1,113 @@
+-- MHS 7-12-20
+-- Used for updating the subregional distribution inputs needed in revenue tool from the land use forecasts
+-- work stored on MYSQL database at "data_request_eco_revenue_tool_bazooka"
+
+-- Create the database
+create database data_request_eco_revenue_tool_bazooka;
+
+use data_request_eco_revenue_tool_bazooka;
+
+-- Bring copy of the original LUV.2 parcels and ST, PTBA geography to assess - turns out only 2 extra parcels in LUV2, so can use this correspondence
+create table luv2_parcels_ptba_st
+select * from data_request_eco_revenue_tool.luv2_parcels_ptba_st;
+
+alter table luv2_parcels_ptba_st add primary key(parcel_id);
+
+alter table luv2_parcels_ptba_st add column ptba_name_2 varchar(20), add column ptba_loc_2 varchar(20);
+
+-- Clean up work, commenting and uncommenting out each line, messy format from GIS
+
+update luv2_parcels_ptba_st
+set ptba_name_2 = 'thurston_ptba'
+where ptba_name in
+#(' ')
+#('')
+#('"Chelan-Douglas PTBA"')
+#('"Everett PTBA"')
+#('"Island PTBA"')
+#('"King PTBA"')
+#('"Kitsap PTBA"')
+#('"Mason PTBA"')
+#('"Pierce PTBA"')
+#('"Snohomish PTBA"')
+('"Thurston PTBA"')
+;
+
+update luv2_parcels_ptba_st
+set ptba_loc_2 = '3434'
+where ptba_loc in (
+# ''
+# '"0400"'
+# '"3105"'
+# '"1500"'
+# '"1700"'
+# '"1800"'
+# '"2300"'
+# '"2727"'
+# '"3131"'
+ '"3434"'
+);
+
+
+-- Switcharoo removing temporary working columns
+
+alter table luv2_parcels_ptba_st drop column ptba_name, drop column ptba_loc;
+
+alter table luv2_parcels_ptba_st add column ptba_name varchar(20), add column ptba_loc varchar(20);
+
+update luv2_parcels_ptba_st set ptba_name = ptba_name_2, ptba_loc = ptba_loc_2;
+
+alter table luv2_parcels_ptba_st drop column ptba_name_2, drop column ptba_loc_2;
+
+-- Bring in new 2014 base year parcels from V2050 work
+
+create table bazooka_parcels_ptba_st
+select * from v2050_rgs_bazooka_2014.parcels;
+
+alter table bazooka_parcels_ptba_st add primary key(parcel_id);
+
+-- Transfer the PTBA and ST_Dist correspondence from LUV.2 parcels to V2050 parcels
+
+alter table bazooka_parcels_ptba_st add column ptba_name varchar(20), add column ptba_loc varchar(20), add column st_dist int(11);
+
+update bazooka_parcels_ptba_st b
+inner join luv2_parcels_ptba_st v
+on b.parcel_id = v.parcel_id
+set b.ptba_name = v.ptba_name
+,b.ptba_loc = v.ptba_loc
+,b.st_dist = v.st_dist;
+
+alter table bazooka_parcels_ptba_st add column ptba_id int(11), add column st_dist_id int(11);
+
+-- Assigning unique IDs needed for indicators one line at a time again
+
+update bazooka_parcels_ptba_st
+#set ptba_id = 1 where ptba_loc in ('na')
+#set ptba_id = 2 where ptba_loc in ('0400')
+#set ptba_id = 3 where ptba_loc in ('1500')
+#set ptba_id = 4 where ptba_loc in ('1700')
+#set ptba_id = 5 where ptba_loc in ('1800')
+#set ptba_id = 6 where ptba_loc in ('2300')
+#set ptba_id = 7 where ptba_loc in ('2727')
+#set ptba_id = 8 where ptba_loc in ('3105')
+#set ptba_id = 9 where ptba_loc in ('3131')
+set ptba_id = 10 where ptba_loc in ('3434')
+;
+
+update bazooka_parcels_ptba_st set st_dist_id = st_dist+1;
+
+-- create the database tables also needed in the base year cache for the indicator script
+
+create table ptba
+SELECT ptba_id, ptba_name, ptba_loc FROM bazooka_parcels_ptba_st
+group by ptba_id, ptba_name, ptba_loc;
+
+create table st_dist
+SELECT st_dist_id, st_dist FROM bazooka_parcels_ptba_st
+group by st_dist_id, st_dist;
+
+-- extracts and checks
+
+SELECT * FROM ptba p;
+SELECT * FROM st_dist p;
+SELECT * FROM bazooka_parcels_ptba_st limit 199;
