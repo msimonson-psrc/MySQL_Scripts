@@ -1,0 +1,93 @@
+create table 2018_by_export_qc.parcels_dat
+(
+aparks integer not null
+,empedu_p integer not null
+,empfoo_p integer not null
+,empgov_p integer not null
+,empind_p integer not null
+,empmed_p integer not null
+,empofc_p integer not null
+,empoth_p integer not null
+,empret_p integer not null
+,emprsc_p integer not null
+,empsvc_p integer not null
+,emptot_p integer not null
+,hh_p integer not null
+,lutype_p integer not null
+,nparks integer not null
+,parcelid integer not null
+,parkdy_p integer not null
+,parkhr_p integer not null
+,ppricdyp integer not null
+,pprichrp integer not null
+,sqft_p integer not null
+,stugrd_p integer not null
+,stuhgh_p integer not null
+,stuuni_p integer not null
+,taz_p integer not null
+,xcoord_p float not null
+,ycoord_p float not null
+,primary key (parcelid)
+);
+
+## If your imported text fields include little paragraph signs and / or line breaks try this:
+## LINES TERMINATED BY '\r\n'
+## Tab delimited use '\t'
+## Good Stack Overflow discussion at https://stackoverflow.com/questions/13579810/how-to-import-data-from-text-file-to-mysql-database
+
+
+LOAD DATA LOCAL INFILE 'T:/2020July/MarkS/urbansim_outputs_200722/2018/parcels.dat'
+INTO TABLE 2018_by_export_qc.parcels_dat
+FIELDS TERMINATED BY ' '
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+aparks
+,empedu_p
+,empfoo_p
+,empgov_p
+,empind_p
+,empmed_p
+,empofc_p
+,empoth_p
+,empret_p
+,emprsc_p
+,empsvc_p
+,emptot_p
+,hh_p
+,lutype_p
+,nparks
+,parcelid
+,parkdy_p
+,parkhr_p
+,ppricdyp
+,pprichrp
+,sqft_p
+,stugrd_p
+,stuhgh_p
+,stuuni_p
+,taz_p
+,xcoord_p
+,ycoord_p
+);
+
+select count(*) from 2018_by_export_qc.parcels_dat;
+
+select
+sum(empedu_p)
+,sum(empfoo_p)
+,sum(empgov_p)
+,sum(empind_p)
+,sum(empmed_p)
+,sum(empofc_p)
+,sum(empoth_p)
+,sum(empret_p)
+,sum(emprsc_p)
+,sum(empsvc_p)
+,sum(emptot_p)
+,sum(hh_p)
+,sum(stugrd_p)
+,sum(stuhgh_p)
+,sum(stuuni_p)
+from 2018_by_export_qc.parcels_dat;
