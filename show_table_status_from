@@ -1,0 +1,30 @@
+SELECT
+table_name
+#,Engine
+#,Version
+#,Row_format
+,table_rows
+#,Avg_row_length
+#,Data_length
+#,Max_data_length
+,Index_length
+#,Data_free
+#,Auto_increment
+,Create_time
+,Update_time
+#,Check_time
+#,table_collation
+#,Checksum
+#,Create_options
+#,table_comment
+FROM information_schema.tables
+WHERE table_schema = 'king_2018_parcel_baseyear'
+#WHERE table_schema = 'kitsap_2018_parcel_baseyear_may2020'
+#WHERE table_schema = 'pierce_2018_parcel_baseyear_may2020'
+#WHERE table_schema = 'snohomish_2018_parcel_baseyear_may2020'
+#WHERE table_schema = '2018_parcel_baseyear_working_may2020'
+#WHERE table_schema = '2018_parcel_baseyear_working'
+#WHERE table_schema = '2018_parcel_baseyear_working_jobs'
+#WHERE table_schema = '2018_parcel_baseyear_sandbox'
+#WHERE table_schema = '2018_parcel_baseyear'
+order by Update_time desc;
