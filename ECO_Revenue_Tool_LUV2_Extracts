@@ -1,8 +1,143 @@
-#  Edits needed - search in replace in Notepad:
-#  The MySQL directory:  Here, its 'data_request_eco_revenue_tool'
-#  The name of the parcels table with the ST and PTBA districts:  Here, its 'luv2_parcels_ptba_st'
-#  The directory structure with the UrbanSim run outputs in MySQL:  Here, its 'luv2_final_outputs_XXXX' where XXXX is the year (2014,2020...2050)
-#  Also need to add parcel_id to the households and jobs table.  
+#  Edits needed if running on another scenario - search in replace in Notepad:
+#   - The MySQL directory:  Here, its 'data_request_eco_revenue_tool'
+#   - The name of the parcels table with the ST and PTBA districts:  Here, its 'luv2_parcels_ptba_st'
+#   - The directory structure with the UrbanSim run outputs in MySQL:  Here, its 'luv2_final_outputs_XXXX' where XXXX is the year (2014,2020...2050)
+#   - Sector Number that's retail:  Here, its (7)... but needs to be (5) in the new 13 sector system
+
+#  Also might need to add parcel_id to the households and jobs table.  
+#  Uncomment the following section if so
+
+/*
+alter table luv2_final_outputs_2014.households add column parcel_id integer;
+update luv2_final_outputs_2014.households set parcel_id = 0;
+alter table luv2_final_outputs_2014.households add index(building_id);
+update luv2_final_outputs_2014.households inner join luv2_final_outputs_2014.buildings
+on luv2_final_outputs_2014.households.building_id = luv2_final_outputs_2014.buildings.building_id
+set luv2_final_outputs_2014.households.parcel_id = luv2_final_outputs_2014.buildings.parcel_id;
+alter table luv2_final_outputs_2014.households add index(parcel_id);
+
+alter table luv2_final_outputs_2014.jobs add column parcel_id integer;
+update luv2_final_outputs_2014.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2014.jobs add index(building_id);
+update luv2_final_outputs_2014.jobs inner join luv2_final_outputs_2014.buildings
+on luv2_final_outputs_2014.jobs.building_id = luv2_final_outputs_2014.buildings.building_id
+set luv2_final_outputs_2014.jobs.parcel_id = luv2_final_outputs_2014.buildings.parcel_id;
+alter table luv2_final_outputs_2014.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2020.households add column parcel_id integer;
+update luv2_final_outputs_2020.households set parcel_id = 0;
+alter table luv2_final_outputs_2020.households add index(building_id);
+update luv2_final_outputs_2020.households inner join luv2_final_outputs_2020.buildings
+on luv2_final_outputs_2020.households.building_id = luv2_final_outputs_2020.buildings.building_id
+set luv2_final_outputs_2020.households.parcel_id = luv2_final_outputs_2020.buildings.parcel_id;
+alter table luv2_final_outputs_2020.households add index(parcel_id);
+
+alter table luv2_final_outputs_2020.jobs add column parcel_id integer;
+update luv2_final_outputs_2020.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2020.jobs add index(building_id);
+update luv2_final_outputs_2020.jobs inner join luv2_final_outputs_2020.buildings
+on luv2_final_outputs_2020.jobs.building_id = luv2_final_outputs_2020.buildings.building_id
+set luv2_final_outputs_2020.jobs.parcel_id = luv2_final_outputs_2020.buildings.parcel_id;
+alter table luv2_final_outputs_2020.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2025.households add column parcel_id integer;
+update luv2_final_outputs_2025.households set parcel_id = 0;
+alter table luv2_final_outputs_2025.households add index(building_id);
+update luv2_final_outputs_2025.households inner join luv2_final_outputs_2025.buildings
+on luv2_final_outputs_2025.households.building_id = luv2_final_outputs_2025.buildings.building_id
+set luv2_final_outputs_2025.households.parcel_id = luv2_final_outputs_2025.buildings.parcel_id;
+alter table luv2_final_outputs_2025.households add index(parcel_id);
+
+alter table luv2_final_outputs_2025.jobs add column parcel_id integer;
+update luv2_final_outputs_2025.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2025.jobs add index(building_id);
+update luv2_final_outputs_2025.jobs inner join luv2_final_outputs_2025.buildings
+on luv2_final_outputs_2025.jobs.building_id = luv2_final_outputs_2025.buildings.building_id
+set luv2_final_outputs_2025.jobs.parcel_id = luv2_final_outputs_2025.buildings.parcel_id;
+alter table luv2_final_outputs_2025.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2030.households add column parcel_id integer;
+update luv2_final_outputs_2030.households set parcel_id = 0;
+alter table luv2_final_outputs_2030.households add index(building_id);
+update luv2_final_outputs_2030.households inner join luv2_final_outputs_2030.buildings
+on luv2_final_outputs_2030.households.building_id = luv2_final_outputs_2030.buildings.building_id
+set luv2_final_outputs_2030.households.parcel_id = luv2_final_outputs_2030.buildings.parcel_id;
+alter table luv2_final_outputs_2030.households add index(parcel_id);
+
+alter table luv2_final_outputs_2030.jobs add column parcel_id integer;
+update luv2_final_outputs_2030.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2030.jobs add index(building_id);
+update luv2_final_outputs_2030.jobs inner join luv2_final_outputs_2030.buildings
+on luv2_final_outputs_2030.jobs.building_id = luv2_final_outputs_2030.buildings.building_id
+set luv2_final_outputs_2030.jobs.parcel_id = luv2_final_outputs_2030.buildings.parcel_id;
+alter table luv2_final_outputs_2030.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2035.households add column parcel_id integer;
+update luv2_final_outputs_2035.households set parcel_id = 0;
+alter table luv2_final_outputs_2035.households add index(building_id);
+update luv2_final_outputs_2035.households inner join luv2_final_outputs_2035.buildings
+on luv2_final_outputs_2035.households.building_id = luv2_final_outputs_2035.buildings.building_id
+set luv2_final_outputs_2035.households.parcel_id = luv2_final_outputs_2035.buildings.parcel_id;
+alter table luv2_final_outputs_2035.households add index(parcel_id);
+
+alter table luv2_final_outputs_2035.jobs add column parcel_id integer;
+update luv2_final_outputs_2035.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2035.jobs add index(building_id);
+update luv2_final_outputs_2035.jobs inner join luv2_final_outputs_2035.buildings
+on luv2_final_outputs_2035.jobs.building_id = luv2_final_outputs_2035.buildings.building_id
+set luv2_final_outputs_2035.jobs.parcel_id = luv2_final_outputs_2035.buildings.parcel_id;
+alter table luv2_final_outputs_2035.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2040.households add column parcel_id integer;
+update luv2_final_outputs_2040.households set parcel_id = 0;
+alter table luv2_final_outputs_2040.households add index(building_id);
+update luv2_final_outputs_2040.households inner join luv2_final_outputs_2040.buildings
+on luv2_final_outputs_2040.households.building_id = luv2_final_outputs_2040.buildings.building_id
+set luv2_final_outputs_2040.households.parcel_id = luv2_final_outputs_2040.buildings.parcel_id;
+alter table luv2_final_outputs_2040.households add index(parcel_id);
+
+alter table luv2_final_outputs_2040.jobs add column parcel_id integer;
+update luv2_final_outputs_2040.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2040.jobs add index(building_id);
+update luv2_final_outputs_2040.jobs inner join luv2_final_outputs_2040.buildings
+on luv2_final_outputs_2040.jobs.building_id = luv2_final_outputs_2040.buildings.building_id
+set luv2_final_outputs_2040.jobs.parcel_id = luv2_final_outputs_2040.buildings.parcel_id;
+alter table luv2_final_outputs_2040.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2045.households add column parcel_id integer;
+update luv2_final_outputs_2045.households set parcel_id = 0;
+alter table luv2_final_outputs_2045.households add index(building_id);
+update luv2_final_outputs_2045.households inner join luv2_final_outputs_2045.buildings
+on luv2_final_outputs_2045.households.building_id = luv2_final_outputs_2045.buildings.building_id
+set luv2_final_outputs_2045.households.parcel_id = luv2_final_outputs_2045.buildings.parcel_id;
+alter table luv2_final_outputs_2045.households add index(parcel_id);
+
+alter table luv2_final_outputs_2045.jobs add column parcel_id integer;
+update luv2_final_outputs_2045.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2045.jobs add index(building_id);
+update luv2_final_outputs_2045.jobs inner join luv2_final_outputs_2045.buildings
+on luv2_final_outputs_2045.jobs.building_id = luv2_final_outputs_2045.buildings.building_id
+set luv2_final_outputs_2045.jobs.parcel_id = luv2_final_outputs_2045.buildings.parcel_id;
+alter table luv2_final_outputs_2045.jobs add index(parcel_id);
+
+alter table luv2_final_outputs_2050.households add column parcel_id integer;
+update luv2_final_outputs_2050.households set parcel_id = 0;
+alter table luv2_final_outputs_2050.households add index(building_id);
+update luv2_final_outputs_2050.households inner join luv2_final_outputs_2050.buildings
+on luv2_final_outputs_2050.households.building_id = luv2_final_outputs_2050.buildings.building_id
+set luv2_final_outputs_2050.households.parcel_id = luv2_final_outputs_2050.buildings.parcel_id;
+alter table luv2_final_outputs_2050.households add index(parcel_id);
+
+alter table luv2_final_outputs_2050.jobs add column parcel_id integer;
+update luv2_final_outputs_2050.jobs set parcel_id = 0;
+alter table luv2_final_outputs_2050.jobs add index(building_id);
+update luv2_final_outputs_2050.jobs inner join luv2_final_outputs_2050.buildings
+on luv2_final_outputs_2050.jobs.building_id = luv2_final_outputs_2050.buildings.building_id
+set luv2_final_outputs_2050.jobs.parcel_id = luv2_final_outputs_2050.buildings.parcel_id;
+alter table luv2_final_outputs_2050.jobs add index(parcel_id);
+*/
+
+#  End of the optional section that adds parcel_id to HHs and Jobs if needed
 
 DROP TABLE IF EXISTS data_request_eco_revenue_tool.res_ptba_2014;
 DROP TABLE IF EXISTS data_request_eco_revenue_tool.res_ptba_2020;
