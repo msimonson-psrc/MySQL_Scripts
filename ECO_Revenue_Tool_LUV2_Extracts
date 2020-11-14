@@ -1,3 +1,8 @@
+#  Edits needed - search in replace in Notepad:
+#  The MySQL directory:  Here, its 'data_request_eco_revenue_tool'
+#  The name of the parcels table with the ST and PTBA districts:  Here, its 'luv2_parcels_ptba_st'
+#  The directory structure with the UrbanSim run outputs in MySQL:  Here, its 'luv2_final_outputs_XXXX' where XXXX is the year (2014,2020...2050)
+#  Also need to add parcel_id to the households and jobs table.  
 
 DROP TABLE IF EXISTS data_request_eco_revenue_tool.res_ptba_2014;
 DROP TABLE IF EXISTS data_request_eco_revenue_tool.res_ptba_2020;
