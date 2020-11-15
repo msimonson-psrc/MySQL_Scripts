@@ -1,0 +1,1222 @@
+/*
+#  Edits needed if running on another scenario - search in replace in Notepad:
+#   - The MySQL directory:  Here, it was 'data_request_eco_revenue_tool' changed to 'data_request_eco_revenue_tool_bazooka'
+#   - The name of the parcels table with the ST and PTBA districts:  Here, it was 'luv2_parcels_ptba_st' changed to 'bazooka_parcels_ptba_st'
+#   - The directory structure with the UrbanSim run outputs in MySQL:  Here, it was 'luv2_final_outputs_XXXX' 
+#          changed to 'v2050_rgs_bazooka_XXXX' where XXXX is the year (2014,2020...2050)
+#   - Sector Number that's retail:  Here, it was (7)... but changed to (5) for the new 13 sector system
+
+#  Also might need to add parcel_id to the households and jobs table.  
+#  Uncomment the following section if so
+*/
+/*
+alter table v2050_rgs_bazooka_2014.households add column parcel_id integer;
+update v2050_rgs_bazooka_2014.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2014.households add index(building_id);
+update v2050_rgs_bazooka_2014.households inner join v2050_rgs_bazooka_2014.buildings
+on v2050_rgs_bazooka_2014.households.building_id = v2050_rgs_bazooka_2014.buildings.building_id
+set v2050_rgs_bazooka_2014.households.parcel_id = v2050_rgs_bazooka_2014.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2014.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2014.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2014.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2014.jobs add index(building_id);
+update v2050_rgs_bazooka_2014.jobs inner join v2050_rgs_bazooka_2014.buildings
+on v2050_rgs_bazooka_2014.jobs.building_id = v2050_rgs_bazooka_2014.buildings.building_id
+set v2050_rgs_bazooka_2014.jobs.parcel_id = v2050_rgs_bazooka_2014.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2014.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2020.households add column parcel_id integer;
+update v2050_rgs_bazooka_2020.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2020.households add index(building_id);
+update v2050_rgs_bazooka_2020.households inner join v2050_rgs_bazooka_2020.buildings
+on v2050_rgs_bazooka_2020.households.building_id = v2050_rgs_bazooka_2020.buildings.building_id
+set v2050_rgs_bazooka_2020.households.parcel_id = v2050_rgs_bazooka_2020.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2020.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2020.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2020.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2020.jobs add index(building_id);
+update v2050_rgs_bazooka_2020.jobs inner join v2050_rgs_bazooka_2020.buildings
+on v2050_rgs_bazooka_2020.jobs.building_id = v2050_rgs_bazooka_2020.buildings.building_id
+set v2050_rgs_bazooka_2020.jobs.parcel_id = v2050_rgs_bazooka_2020.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2020.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2025.households add column parcel_id integer;
+update v2050_rgs_bazooka_2025.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2025.households add index(building_id);
+update v2050_rgs_bazooka_2025.households inner join v2050_rgs_bazooka_2025.buildings
+on v2050_rgs_bazooka_2025.households.building_id = v2050_rgs_bazooka_2025.buildings.building_id
+set v2050_rgs_bazooka_2025.households.parcel_id = v2050_rgs_bazooka_2025.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2025.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2025.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2025.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2025.jobs add index(building_id);
+update v2050_rgs_bazooka_2025.jobs inner join v2050_rgs_bazooka_2025.buildings
+on v2050_rgs_bazooka_2025.jobs.building_id = v2050_rgs_bazooka_2025.buildings.building_id
+set v2050_rgs_bazooka_2025.jobs.parcel_id = v2050_rgs_bazooka_2025.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2025.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2030.households add column parcel_id integer;
+update v2050_rgs_bazooka_2030.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2030.households add index(building_id);
+update v2050_rgs_bazooka_2030.households inner join v2050_rgs_bazooka_2030.buildings
+on v2050_rgs_bazooka_2030.households.building_id = v2050_rgs_bazooka_2030.buildings.building_id
+set v2050_rgs_bazooka_2030.households.parcel_id = v2050_rgs_bazooka_2030.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2030.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2030.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2030.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2030.jobs add index(building_id);
+update v2050_rgs_bazooka_2030.jobs inner join v2050_rgs_bazooka_2030.buildings
+on v2050_rgs_bazooka_2030.jobs.building_id = v2050_rgs_bazooka_2030.buildings.building_id
+set v2050_rgs_bazooka_2030.jobs.parcel_id = v2050_rgs_bazooka_2030.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2030.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2035.households add column parcel_id integer;
+update v2050_rgs_bazooka_2035.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2035.households add index(building_id);
+update v2050_rgs_bazooka_2035.households inner join v2050_rgs_bazooka_2035.buildings
+on v2050_rgs_bazooka_2035.households.building_id = v2050_rgs_bazooka_2035.buildings.building_id
+set v2050_rgs_bazooka_2035.households.parcel_id = v2050_rgs_bazooka_2035.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2035.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2035.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2035.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2035.jobs add index(building_id);
+update v2050_rgs_bazooka_2035.jobs inner join v2050_rgs_bazooka_2035.buildings
+on v2050_rgs_bazooka_2035.jobs.building_id = v2050_rgs_bazooka_2035.buildings.building_id
+set v2050_rgs_bazooka_2035.jobs.parcel_id = v2050_rgs_bazooka_2035.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2035.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2040.households add column parcel_id integer;
+update v2050_rgs_bazooka_2040.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2040.households add index(building_id);
+update v2050_rgs_bazooka_2040.households inner join v2050_rgs_bazooka_2040.buildings
+on v2050_rgs_bazooka_2040.households.building_id = v2050_rgs_bazooka_2040.buildings.building_id
+set v2050_rgs_bazooka_2040.households.parcel_id = v2050_rgs_bazooka_2040.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2040.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2040.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2040.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2040.jobs add index(building_id);
+update v2050_rgs_bazooka_2040.jobs inner join v2050_rgs_bazooka_2040.buildings
+on v2050_rgs_bazooka_2040.jobs.building_id = v2050_rgs_bazooka_2040.buildings.building_id
+set v2050_rgs_bazooka_2040.jobs.parcel_id = v2050_rgs_bazooka_2040.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2040.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2045.households add column parcel_id integer;
+update v2050_rgs_bazooka_2045.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2045.households add index(building_id);
+update v2050_rgs_bazooka_2045.households inner join v2050_rgs_bazooka_2045.buildings
+on v2050_rgs_bazooka_2045.households.building_id = v2050_rgs_bazooka_2045.buildings.building_id
+set v2050_rgs_bazooka_2045.households.parcel_id = v2050_rgs_bazooka_2045.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2045.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2045.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2045.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2045.jobs add index(building_id);
+update v2050_rgs_bazooka_2045.jobs inner join v2050_rgs_bazooka_2045.buildings
+on v2050_rgs_bazooka_2045.jobs.building_id = v2050_rgs_bazooka_2045.buildings.building_id
+set v2050_rgs_bazooka_2045.jobs.parcel_id = v2050_rgs_bazooka_2045.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2045.jobs add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2050.households add column parcel_id integer;
+update v2050_rgs_bazooka_2050.households set parcel_id = 0;
+alter table v2050_rgs_bazooka_2050.households add index(building_id);
+update v2050_rgs_bazooka_2050.households inner join v2050_rgs_bazooka_2050.buildings
+on v2050_rgs_bazooka_2050.households.building_id = v2050_rgs_bazooka_2050.buildings.building_id
+set v2050_rgs_bazooka_2050.households.parcel_id = v2050_rgs_bazooka_2050.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2050.households add index(parcel_id);
+
+alter table v2050_rgs_bazooka_2050.jobs add column parcel_id integer;
+update v2050_rgs_bazooka_2050.jobs set parcel_id = 0;
+alter table v2050_rgs_bazooka_2050.jobs add index(building_id);
+update v2050_rgs_bazooka_2050.jobs inner join v2050_rgs_bazooka_2050.buildings
+on v2050_rgs_bazooka_2050.jobs.building_id = v2050_rgs_bazooka_2050.buildings.building_id
+set v2050_rgs_bazooka_2050.jobs.parcel_id = v2050_rgs_bazooka_2050.buildings.parcel_id;
+alter table v2050_rgs_bazooka_2050.jobs add index(parcel_id);
+*/
+
+#  End of the optional section that adds parcel_id to HHs and Jobs if needed
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_ptba_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_st_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.res_city_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_ptba_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_st_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.emp_city_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_ptba_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_st_2050;
+
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2014;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2020;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2025;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2030;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2035;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2040;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2045;
+DROP TABLE IF EXISTS data_request_eco_revenue_tool_bazooka.retemp_city_2050;
+
+## 2014
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2014.households.household_id) as households
+,sum(v2050_rgs_bazooka_2014.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2014.households.household_id) as households
+,sum(v2050_rgs_bazooka_2014.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2014
+SELECT
+v2050_rgs_bazooka_2014.parcels.city_id
+,count(v2050_rgs_bazooka_2014.households.household_id) as households
+,sum(v2050_rgs_bazooka_2014.households.persons) as persons
+FROM v2050_rgs_bazooka_2014.parcels
+inner join v2050_rgs_bazooka_2014.households
+on v2050_rgs_bazooka_2014.parcels.parcel_id = v2050_rgs_bazooka_2014.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2014
+SELECT
+v2050_rgs_bazooka_2014.parcels.city_id
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2014.parcels
+inner join v2050_rgs_bazooka_2014.jobs
+on v2050_rgs_bazooka_2014.parcels.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2014.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2014
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2014.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2014.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2014
+SELECT
+v2050_rgs_bazooka_2014.parcels.city_id
+,count(v2050_rgs_bazooka_2014.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2014.parcels
+inner join v2050_rgs_bazooka_2014.jobs
+on v2050_rgs_bazooka_2014.parcels.parcel_id = v2050_rgs_bazooka_2014.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2014.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+
+## 2020
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2020.households.household_id) as households
+,sum(v2050_rgs_bazooka_2020.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2020.households.household_id) as households
+,sum(v2050_rgs_bazooka_2020.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2020
+SELECT
+v2050_rgs_bazooka_2020.parcels.city_id
+,count(v2050_rgs_bazooka_2020.households.household_id) as households
+,sum(v2050_rgs_bazooka_2020.households.persons) as persons
+FROM v2050_rgs_bazooka_2020.parcels
+inner join v2050_rgs_bazooka_2020.households
+on v2050_rgs_bazooka_2020.parcels.parcel_id = v2050_rgs_bazooka_2020.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2020
+SELECT
+v2050_rgs_bazooka_2020.parcels.city_id
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2020.parcels
+inner join v2050_rgs_bazooka_2020.jobs
+on v2050_rgs_bazooka_2020.parcels.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2020.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2020
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2020.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2020.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2020
+SELECT
+v2050_rgs_bazooka_2020.parcels.city_id
+,count(v2050_rgs_bazooka_2020.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2020.parcels
+inner join v2050_rgs_bazooka_2020.jobs
+on v2050_rgs_bazooka_2020.parcels.parcel_id = v2050_rgs_bazooka_2020.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2020.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+
+## 2025
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2025.households.household_id) as households
+,sum(v2050_rgs_bazooka_2025.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2025.households.household_id) as households
+,sum(v2050_rgs_bazooka_2025.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2025
+SELECT
+v2050_rgs_bazooka_2025.parcels.city_id
+,count(v2050_rgs_bazooka_2025.households.household_id) as households
+,sum(v2050_rgs_bazooka_2025.households.persons) as persons
+FROM v2050_rgs_bazooka_2025.parcels
+inner join v2050_rgs_bazooka_2025.households
+on v2050_rgs_bazooka_2025.parcels.parcel_id = v2050_rgs_bazooka_2025.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2025
+SELECT
+v2050_rgs_bazooka_2025.parcels.city_id
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2025.parcels
+inner join v2050_rgs_bazooka_2025.jobs
+on v2050_rgs_bazooka_2025.parcels.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2025.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2025
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2025.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2025.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2025
+SELECT
+v2050_rgs_bazooka_2025.parcels.city_id
+,count(v2050_rgs_bazooka_2025.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2025.parcels
+inner join v2050_rgs_bazooka_2025.jobs
+on v2050_rgs_bazooka_2025.parcels.parcel_id = v2050_rgs_bazooka_2025.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2025.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+
+## 2030
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2030.households.household_id) as households
+,sum(v2050_rgs_bazooka_2030.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2030.households.household_id) as households
+,sum(v2050_rgs_bazooka_2030.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2030
+SELECT
+v2050_rgs_bazooka_2030.parcels.city_id
+,count(v2050_rgs_bazooka_2030.households.household_id) as households
+,sum(v2050_rgs_bazooka_2030.households.persons) as persons
+FROM v2050_rgs_bazooka_2030.parcels
+inner join v2050_rgs_bazooka_2030.households
+on v2050_rgs_bazooka_2030.parcels.parcel_id = v2050_rgs_bazooka_2030.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2030
+SELECT
+v2050_rgs_bazooka_2030.parcels.city_id
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2030.parcels
+inner join v2050_rgs_bazooka_2030.jobs
+on v2050_rgs_bazooka_2030.parcels.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2030.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2030
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2030.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2030.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2030
+SELECT
+v2050_rgs_bazooka_2030.parcels.city_id
+,count(v2050_rgs_bazooka_2030.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2030.parcels
+inner join v2050_rgs_bazooka_2030.jobs
+on v2050_rgs_bazooka_2030.parcels.parcel_id = v2050_rgs_bazooka_2030.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2030.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+
+## 2035
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2035.households.household_id) as households
+,sum(v2050_rgs_bazooka_2035.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2035.households.household_id) as households
+,sum(v2050_rgs_bazooka_2035.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2035
+SELECT
+v2050_rgs_bazooka_2035.parcels.city_id
+,count(v2050_rgs_bazooka_2035.households.household_id) as households
+,sum(v2050_rgs_bazooka_2035.households.persons) as persons
+FROM v2050_rgs_bazooka_2035.parcels
+inner join v2050_rgs_bazooka_2035.households
+on v2050_rgs_bazooka_2035.parcels.parcel_id = v2050_rgs_bazooka_2035.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2035
+SELECT
+v2050_rgs_bazooka_2035.parcels.city_id
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2035.parcels
+inner join v2050_rgs_bazooka_2035.jobs
+on v2050_rgs_bazooka_2035.parcels.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2035.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2035
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2035.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2035.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2035
+SELECT
+v2050_rgs_bazooka_2035.parcels.city_id
+,count(v2050_rgs_bazooka_2035.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2035.parcels
+inner join v2050_rgs_bazooka_2035.jobs
+on v2050_rgs_bazooka_2035.parcels.parcel_id = v2050_rgs_bazooka_2035.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2035.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+
+## 2040
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2040.households.household_id) as households
+,sum(v2050_rgs_bazooka_2040.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2040.households.household_id) as households
+,sum(v2050_rgs_bazooka_2040.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2040
+SELECT
+v2050_rgs_bazooka_2040.parcels.city_id
+,count(v2050_rgs_bazooka_2040.households.household_id) as households
+,sum(v2050_rgs_bazooka_2040.households.persons) as persons
+FROM v2050_rgs_bazooka_2040.parcels
+inner join v2050_rgs_bazooka_2040.households
+on v2050_rgs_bazooka_2040.parcels.parcel_id = v2050_rgs_bazooka_2040.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2040
+SELECT
+v2050_rgs_bazooka_2040.parcels.city_id
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2040.parcels
+inner join v2050_rgs_bazooka_2040.jobs
+on v2050_rgs_bazooka_2040.parcels.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2040.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2040
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2040.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2040.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2040
+SELECT
+v2050_rgs_bazooka_2040.parcels.city_id
+,count(v2050_rgs_bazooka_2040.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2040.parcels
+inner join v2050_rgs_bazooka_2040.jobs
+on v2050_rgs_bazooka_2040.parcels.parcel_id = v2050_rgs_bazooka_2040.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2040.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+## 2045
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2045.households.household_id) as households
+,sum(v2050_rgs_bazooka_2045.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2045.households.household_id) as households
+,sum(v2050_rgs_bazooka_2045.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2045
+SELECT
+v2050_rgs_bazooka_2045.parcels.city_id
+,count(v2050_rgs_bazooka_2045.households.household_id) as households
+,sum(v2050_rgs_bazooka_2045.households.persons) as persons
+FROM v2050_rgs_bazooka_2045.parcels
+inner join v2050_rgs_bazooka_2045.households
+on v2050_rgs_bazooka_2045.parcels.parcel_id = v2050_rgs_bazooka_2045.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2045
+SELECT
+v2050_rgs_bazooka_2045.parcels.city_id
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2045.parcels
+inner join v2050_rgs_bazooka_2045.jobs
+on v2050_rgs_bazooka_2045.parcels.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2045.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2045
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2045.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2045.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2045
+SELECT
+v2050_rgs_bazooka_2045.parcels.city_id
+,count(v2050_rgs_bazooka_2045.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2045.parcels
+inner join v2050_rgs_bazooka_2045.jobs
+on v2050_rgs_bazooka_2045.parcels.parcel_id = v2050_rgs_bazooka_2045.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2045.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+## 2050
+
+create table data_request_eco_revenue_tool_bazooka.res_ptba_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2050.households.household_id) as households
+,sum(v2050_rgs_bazooka_2050.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.households.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.res_st_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2050.households.household_id) as households
+,sum(v2050_rgs_bazooka_2050.households.persons) as persons
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.households
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.households.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.res_city_2050
+SELECT
+v2050_rgs_bazooka_2050.parcels.city_id
+,count(v2050_rgs_bazooka_2050.households.household_id) as households
+,sum(v2050_rgs_bazooka_2050.households.persons) as persons
+FROM v2050_rgs_bazooka_2050.parcels
+inner join v2050_rgs_bazooka_2050.households
+on v2050_rgs_bazooka_2050.parcels.parcel_id = v2050_rgs_bazooka_2050.households.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.emp_ptba_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.emp_st_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.emp_city_2050
+SELECT
+v2050_rgs_bazooka_2050.parcels.city_id
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2050.parcels
+inner join v2050_rgs_bazooka_2050.jobs
+on v2050_rgs_bazooka_2050.parcels.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+GROUP BY
+city_id;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_ptba_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.PTBA_NAME
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2050.jobs.sector_id in (5)
+GROUP BY
+PTBA_NAME;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_st_2050
+SELECT
+data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.ST_DIST
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st
+inner join v2050_rgs_bazooka_2050.jobs
+on data_request_eco_revenue_tool_bazooka.bazooka_parcels_ptba_st.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2050.jobs.sector_id in (5)
+GROUP BY
+ST_DIST;
+
+create table data_request_eco_revenue_tool_bazooka.retemp_city_2050
+SELECT
+v2050_rgs_bazooka_2050.parcels.city_id
+,count(v2050_rgs_bazooka_2050.jobs.job_id) as jobs
+FROM v2050_rgs_bazooka_2050.parcels
+inner join v2050_rgs_bazooka_2050.jobs
+on v2050_rgs_bazooka_2050.parcels.parcel_id = v2050_rgs_bazooka_2050.jobs.parcel_id
+WHERE v2050_rgs_bazooka_2050.jobs.sector_id in (5)
+GROUP BY
+city_id;
+
+## Splicing Tables Together into summary tables
+
+create table data_request_eco_revenue_tool_bazooka.city_alldata
+SELECT
+a.city_id
+#
+,a.households as hh_14
+,b.households as hh_20
+,c.households as hh_25
+,d.households as hh_30
+,e.households as hh_35
+,f.households as hh_40
+,g.households as hh_45
+,h.households as hh_50
+#
+,a.persons as hhpop_14
+,b.persons as hhpop_20
+,c.persons as hhpop_25
+,d.persons as hhpop_30
+,e.persons as hhpop_35
+,f.persons as hhpop_40
+,g.persons as hhpop_45
+,h.persons as hhpop_50
+#
+,i.jobs as jobs_14
+,j.jobs as jobs_20
+,k.jobs as jobs_25
+,l.jobs as jobs_30
+,m.jobs as jobs_35
+,n.jobs as jobs_40
+,o.jobs as jobs_45
+,p.jobs as jobs_50
+#
+,q.jobs as retjobs_14
+,r.jobs as retjobs_20
+,s.jobs as retjobs_25
+,t.jobs as retjobs_30
+,u.jobs as retjobs_35
+,v.jobs as retjobs_40
+,w.jobs as retjobs_45
+,x.jobs as retjobs_50
+#
+FROM data_request_eco_revenue_tool_bazooka.res_city_2014 a
+#
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2020 b on a.city_id = b.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2025 c on a.city_id = c.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2030 d on a.city_id = d.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2035 e on a.city_id = e.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2040 f on a.city_id = f.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2045 g on a.city_id = g.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.res_city_2050 h on a.city_id = h.city_id
+#
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2014 i on a.city_id = i.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2020 j on a.city_id = j.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2025 k on a.city_id = k.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2030 l on a.city_id = l.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2035 m on a.city_id = m.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2040 n on a.city_id = n.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2045 o on a.city_id = o.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.emp_city_2050 p on a.city_id = p.city_id
+#
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2014 q on a.city_id = q.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2020 r on a.city_id = r.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2025 s on a.city_id = s.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2030 t on a.city_id = t.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2035 u on a.city_id = u.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2040 v on a.city_id = v.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2045 w on a.city_id = w.city_id
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_city_2050 x on a.city_id = x.city_id
+;
+
+create table data_request_eco_revenue_tool_bazooka.ptba_alldata
+SELECT
+a.ptba_name
+#
+,a.households as hh_14
+,b.households as hh_20
+,c.households as hh_25
+,d.households as hh_30
+,e.households as hh_35
+,f.households as hh_40
+,g.households as hh_45
+,h.households as hh_50
+#
+,a.persons as hhpop_14
+,b.persons as hhpop_20
+,c.persons as hhpop_25
+,d.persons as hhpop_30
+,e.persons as hhpop_35
+,f.persons as hhpop_40
+,g.persons as hhpop_45
+,h.persons as hhpop_50
+#
+,i.jobs as jobs_14
+,j.jobs as jobs_20
+,k.jobs as jobs_25
+,l.jobs as jobs_30
+,m.jobs as jobs_35
+,n.jobs as jobs_40
+,o.jobs as jobs_45
+,p.jobs as jobs_50
+#
+,q.jobs as retjobs_14
+,r.jobs as retjobs_20
+,s.jobs as retjobs_25
+,t.jobs as retjobs_30
+,u.jobs as retjobs_35
+,v.jobs as retjobs_40
+,w.jobs as retjobs_45
+,x.jobs as retjobs_50
+#
+FROM data_request_eco_revenue_tool_bazooka.res_ptba_2014 a
+#
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2020 b on a.ptba_name = b.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2025 c on a.ptba_name = c.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2030 d on a.ptba_name = d.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2035 e on a.ptba_name = e.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2040 f on a.ptba_name = f.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2045 g on a.ptba_name = g.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.res_ptba_2050 h on a.ptba_name = h.ptba_name
+#
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2014 i on a.ptba_name = i.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2020 j on a.ptba_name = j.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2025 k on a.ptba_name = k.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2030 l on a.ptba_name = l.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2035 m on a.ptba_name = m.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2040 n on a.ptba_name = n.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2045 o on a.ptba_name = o.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.emp_ptba_2050 p on a.ptba_name = p.ptba_name
+#
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2014 q on a.ptba_name = q.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2020 r on a.ptba_name = r.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2025 s on a.ptba_name = s.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2030 t on a.ptba_name = t.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2035 u on a.ptba_name = u.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2040 v on a.ptba_name = v.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2045 w on a.ptba_name = w.ptba_name
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_ptba_2050 x on a.ptba_name = x.ptba_name
+;
+
+create table data_request_eco_revenue_tool_bazooka.st_alldata
+SELECT
+a.st_dist
+#
+,a.households as hh_14
+,b.households as hh_20
+,c.households as hh_25
+,d.households as hh_30
+,e.households as hh_35
+,f.households as hh_40
+,g.households as hh_45
+,h.households as hh_50
+#
+,a.persons as hhpop_14
+,b.persons as hhpop_20
+,c.persons as hhpop_25
+,d.persons as hhpop_30
+,e.persons as hhpop_35
+,f.persons as hhpop_40
+,g.persons as hhpop_45
+,h.persons as hhpop_50
+#
+,i.jobs as jobs_14
+,j.jobs as jobs_20
+,k.jobs as jobs_25
+,l.jobs as jobs_30
+,m.jobs as jobs_35
+,n.jobs as jobs_40
+,o.jobs as jobs_45
+,p.jobs as jobs_50
+#
+,q.jobs as retjobs_14
+,r.jobs as retjobs_20
+,s.jobs as retjobs_25
+,t.jobs as retjobs_30
+,u.jobs as retjobs_35
+,v.jobs as retjobs_40
+,w.jobs as retjobs_45
+,x.jobs as retjobs_50
+#
+FROM data_request_eco_revenue_tool_bazooka.res_st_2014 a
+#
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2020 b on a.st_dist = b.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2025 c on a.st_dist = c.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2030 d on a.st_dist = d.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2035 e on a.st_dist = e.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2040 f on a.st_dist = f.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2045 g on a.st_dist = g.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.res_st_2050 h on a.st_dist = h.st_dist
+#
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2014 i on a.st_dist = i.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2020 j on a.st_dist = j.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2025 k on a.st_dist = k.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2030 l on a.st_dist = l.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2035 m on a.st_dist = m.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2040 n on a.st_dist = n.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2045 o on a.st_dist = o.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.emp_st_2050 p on a.st_dist = p.st_dist
+#
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2014 q on a.st_dist = q.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2020 r on a.st_dist = r.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2025 s on a.st_dist = s.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2030 t on a.st_dist = t.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2035 u on a.st_dist = u.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2040 v on a.st_dist = v.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2045 w on a.st_dist = w.st_dist
+Inner Join data_request_eco_revenue_tool_bazooka.retemp_st_2050 x on a.st_dist = x.st_dist
+;
+
