@@ -1,3 +1,11 @@
+/*  OK, whoever reads this is gonna be LOL'ing for a while... 
+#   I wrote all this in November 2020 to provide updated inputs off Bazooka's MySQL results.  
+#   I then found out that in July 2020 I'd done all this in a much simpler way - using UrbanSim indicators.
+#   The MySQL prep work is at this repository:  ECO_Revenue_Tool_V2050_Bazooka_ind_prep
+#   And the indicator python script is at \\aws-prod-file01\datateam\Projects\Forecasts\Regional\RevenueEstimationTool\Input_Updates_RTP2022_Bazooka
+#   And OMS has finally gotten too old. 11-16-20
+*/
+
 /*
 #  Edits needed if running on another scenario - search in replace in Notepad:
 #   - The MySQL directory:  Here, it was 'data_request_eco_revenue_tool' changed to 'data_request_eco_revenue_tool_bazooka'
