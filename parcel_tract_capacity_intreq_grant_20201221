@@ -1,33 +1,27 @@
-# Copying extract from latest working version of parcel capacity file 
-# Stored in MySQL DB at v2050_parcel_capacity
-# Using as original inputs file capacity_indicator_parcel_20190306 - latest output from Hana's script
+drop table if exists parcels_capacity_census_tracts_12212020;
 
 create table parcels_capacity_census_tracts_12212020
 select
 parcel_id
+,tod_id_final_alt
 ,du_base
 ,du_capacity_50
 ,du_capacity_50_net
 from parcels_pseudo80_capacity_netdist;
 
-# Adding the primary key
 alter table parcels_capacity_census_tracts_12212020 add primary key(parcel_id);
 
-# Expand table to add XY Coordinate fields, the Census Tract ID field, and the corresponding geoid10 field from the correspondence file
-# UrbanSim uses an integer ID for census tracts then relates that back to a separate table.  IDs need to be in integer format, and the full geoid num is too big
-
 alter table parcels_capacity_census_tracts_12212020
-add column x_coord_sp float
+add column tod_id_final_alt_bool int(11)
+,add column x_coord_sp float
 ,add column y_coord_sp float
 ,add column census_tract_id int(11)
 ,add column geoid10 varchar(11)
 ;
 
-# initialize new fields
 update parcels_capacity_census_tracts_12212020
-set x_coord_sp = 0, y_coord_sp = 0, census_tract_id = 0, geoid10 = 'na';
+set tod_id_final_alt_bool = 0, x_coord_sp = 0, y_coord_sp = 0, census_tract_id = 0, geoid10 = 'na';
 
-# port over XY and tract id from latest v2050 parcels table
 update parcels_capacity_census_tracts_12212020 t
 inner join 2014_parcel_baseyear_core.parcels p
 on t.parcel_id = p.parcel_id
@@ -36,20 +30,20 @@ set t.x_coord_sp = p.x_coord_sp
 ,t.census_tract_id = p.census_tract_id
 ;
 
-# port over geoid10 from tract correspondence file
+update parcels_capacity_census_tracts_12212020
+set tod_id_final_alt_bool = 1 where tod_id_final_alt > 0;
+
 update parcels_capacity_census_tracts_12212020 t
 inner join 2014_parcel_baseyear_core.census_tracts c
 on t.census_tract_id = c.census_tract_id
 set t.geoid10 = c.geoid10
 ;
 
-# QC checks
-select * from parcels_capacity_census_tracts_12212020 where census_tract_id = 125 limit 10;
 
-# Set up 'save results as CSV' outputs
+select * from parcels_capacity_census_tracts_12212020 where tod_id_final_alt > 0 limit 300;
+
 select * from parcels_capacity_census_tracts_12212020;
 
-# Set up 'save results as CSV' outputs
 select
 census_tract_id
 ,geoid10
@@ -62,3 +56,13 @@ group by
 census_tract_id
 ,geoid10
 ;
+
+
+select
+tod_id_final_alt
+,count(*)
+from parcels_pseudo80_capacity_netdist
+group by
+tod_id_final_alt
+;
+
