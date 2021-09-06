@@ -1,0 +1,1090 @@
+# List of tables needed - base year 2014
+# parcels
+# buildings
+# households
+# jobs
+# development_constraints
+# development project proposals (for MPDs)
+# development_templates
+# development_template_components
+
+# NEW April 2018 - List of tables needed - output year 2015
+# prior versions had user exporting 2015 table to 2040 or 2050 directory
+# development project proposals
+
+# List of tables needed - output year 2040
+# parcels
+# buildings
+# households
+# jobs
+
+# Also need to search for the specific run directory paths to the 2015 and 2040 databases, and change that to the new path
+# Go to very bottom of script, line 1026 or so, see what path is being used for creating the 'built_2040' table
+# Do a search-replace in text editor for the 2015 and 2040 versions
+
+# Before starting the script, navigate to the 2014 results database
+
+# NEW July 2019 - if you are re-running this from scratch on a database that already tried to run this script, uncomment the
+# following lines to clean out columns that get added to development templates and components tables
+
+ Alter table development_template_components drop column res_or_non;
+ Alter table development_template_components drop column percent_res;
+ Alter table development_templates drop column building_sqft_per_unit;
+ Alter table development_templates drop column percent_res;
+
+Drop table if exists parcels_with_built_2014_2040;
+Drop table if exists residential_development_constraints_summary;
+Drop table if exists non_residential_development_constraints_summary;
+Drop table if exists development_constraints_summary;
+Drop table if exists parcels_with_constraints;
+Drop table if exists built_2014;
+Drop table if exists built_2040;
+Drop table if exists parcels_with_built_2014;
+Drop table if exists temp_1;
+Drop table if exists parcels_in_regional_growth_centers;
+Drop table if exists development_constraints_crosstab_summary;
+drop table if exists parcels_with_redevelopment_proposals_2015;
+drop table if exists parcels_with_development_proposals_2015;
+drop table if exists parcels_with_vacant_land_proposals_2015;
+drop table if exists temp;
+drop table if exists mpds;
+drop table if exists mpds_by_parcel_subtotal;
+drop table if exists jobs_2014;
+drop table if exists jobs_2014_by_parcel;
+drop table if exists households_2014;
+drop table if exists households_2014_by_parcel;
+drop table if exists jobs_2040;
+drop table if exists jobs_2040_by_parcel;
+drop table if exists households_2040;
+drop table if exists households_2040_by_parcel;
+#
+# Added 1_19_11 to adjust two largest Mega-Parcels that create overflow
+# errors if left as is:
+# parcel_id parcel_sqft “ “ _in_gis land_area_used
+# ==== ===== ===== ==============
+# 1180851 1,279,836,360 1,293,471 adj to _in_gis num
+# 957943 1,181,390,760 26,923 adj to _in_gis num
+#Update parcels Set parcel_sqft=parcel_sqft_in_gis where parcel_id=1180851;
+#Update parcels Set land_area_used=parcel_sqft_in_gis where parcel_id=1180851;
+#Update parcels Set parcel_sqft=parcel_sqft_in_gis where parcel_id=957943;
+#Update parcels Set land_area_used=parcel_sqft_in_gis where parcel_id=957943;
+#
+# Creating two tables, one for Units and one for FAR, that summarizes
+# how many constraints exist for each plan_type_id, by Units and FAR types,
+# and finds the maximum and minimum Units/FAR by plan_type_id
+#
+Create Table residential_development_constraints_summary
+Select
+development_constraints.plan_type_id,
+count(constraint_id) as number_of_residential_constraints,
+min(development_constraints.minimum) as minimum_dwelling_units_per_acre,
+max(development_constraints.maximum) as maximum_dwelling_units_per_acre
+From development_constraints
+Where development_constraints.constraint_type='units_per_acre'
+Group by development_constraints.plan_type_id
+;
+Create Table non_residential_development_constraints_summary
+Select
+development_constraints.plan_type_id,
+count(constraint_id) as number_of_non_residential_constraints,
+min(development_constraints.minimum) as minimum_far,
+max(development_constraints.maximum) as maximum_far
+From development_constraints
+Where development_constraints.constraint_type='far'
+Group by development_constraints.plan_type_id
+;
+# Consolidate the previous two tables into one
+## NOTE Replaced what was here before with new code, after discovering
+## prior version generated a lot of nulls since Left Joins don’t capture all PTIDs anymore
+#
+create table development_constraints_summary
+select plan_type_id from development_constraints group by plan_type_id;
+alter table development_constraints_summary
+Add column number_of_residential_constraints integer,
+Add column minimum_dwelling_units_per_acre float,
+add column maximum_dwelling_units_per_acre float,
+add column number_of_non_residential_constraints integer,
+add column minimum_far float,
+add column maximum_far float
+;
+Alter table development_constraints_summary Add Index (plan_type_id);
+Update development_constraints_summary
+Set
+number_of_residential_constraints=0,
+minimum_dwelling_units_per_acre = 0,
+maximum_dwelling_units_per_acre = 0,
+number_of_non_residential_constraints=0,
+minimum_far = 0,
+maximum_far = 0
+;
+update development_constraints_summary
+inner join residential_development_constraints_summary
+on development_constraints_summary.plan_type_id=residential_development_constraints_summary.plan_type_id
+set development_constraints_summary.number_of_residential_constraints=residential_development_constraints_summary.number_of_residential_constraints,
+development_constraints_summary.minimum_dwelling_units_per_acre=residential_development_constraints_summary.minimum_dwelling_units_per_acre,
+development_constraints_summary.maximum_dwelling_units_per_acre=residential_development_constraints_summary.maximum_dwelling_units_per_acre
+;
+update development_constraints_summary
+inner join non_residential_development_constraints_summary
+on development_constraints_summary.plan_type_id=non_residential_development_constraints_summary.plan_type_id
+set development_constraints_summary.number_of_non_residential_constraints=non_residential_development_constraints_summary.number_of_non_residential_constraints,
+development_constraints_summary.minimum_far=non_residential_development_constraints_summary.minimum_far,
+development_constraints_summary.maximum_far=non_residential_development_constraints_summary.maximum_far
+;
+# Creating a version of the parcels table now that merges in the development_constraints_summary for each parcel.
+Create Table parcels_with_constraints
+Select
+parcels.parcel_id,
+parcels.city_id,
+parcels.regional_geography_id,
+parcels.county_id,
+parcels.plan_type_id,
+#parcels.id_parcel,
+parcels.is_inside_urban_growth_boundary,
+parcels.parcel_sqft,
+parcels.large_area_id,
+parcels.land_value,
+#parcels.parcel_sqft_in_gis,
+parcels.faz_id,
+parcels.zone_id,
+parcels.land_use_type_id,
+development_constraints_summary.number_of_residential_constraints,
+development_constraints_summary.minimum_dwelling_units_per_acre,
+development_constraints_summary.maximum_dwelling_units_per_acre,
+development_constraints_summary.number_of_non_residential_constraints,
+development_constraints_summary.minimum_far,
+development_constraints_summary.maximum_far
+From parcels
+Left Join development_constraints_summary
+On parcels.plan_type_id=development_constraints_summary.plan_type_id
+;
+Alter table parcels_with_constraints Add Primary Key (parcel_id)
+;
+# Now summarizing from the 2014 and 2040 buildings tables the built environment by parcel, units and no-res SQFT
+Create table built_2014
+Select
+parcel_id,
+sum(residential_units) as residential_units_2014,
+sum(non_residential_sqft) as non_residential_sqft_2014,
+sum(residential_units * sqft_per_unit) as residential_sqft_2014  ## NEW 4-13-18
+From buildings
+Group by parcel_id
+;
+Create table built_2040
+Select
+luv2_lodes_final_outputs_2040.buildings.parcel_id,
+sum(luv2_lodes_final_outputs_2040.buildings.residential_units) as residential_units_2040,
+sum(luv2_lodes_final_outputs_2040.buildings.non_residential_sqft) as non_residential_sqft_2040,
+sum(luv2_lodes_final_outputs_2040.buildings.residential_units * luv2_lodes_final_outputs_2040.buildings.sqft_per_unit) as residential_sqft_2040,  ## NEW 4-13-18
+max(template_id) as template_id,
+max(year_built) as year_built
+From luv2_lodes_final_outputs_2040.buildings
+Group by luv2_lodes_final_outputs_2040.buildings.parcel_id
+;
+Alter table built_2014 Add Index (parcel_id)
+;
+Alter table built_2040 Add Index (parcel_id)
+;
+# Combining the parcels_with_constraints with the parcles with the built summaries for 2014 and 2040
+Create Table parcels_with_built_2014
+Select
+parcels_with_constraints.parcel_id,
+parcels_with_constraints.city_id,
+parcels_with_constraints.regional_geography_id,
+parcels_with_constraints.county_id,
+parcels_with_constraints.plan_type_id,
+#parcels_with_constraints.id_parcel,
+parcels_with_constraints.is_inside_urban_growth_boundary,
+parcels_with_constraints.parcel_sqft,
+parcels_with_constraints.large_area_id,
+parcels_with_constraints.land_value,
+#parcels_with_constraints.parcel_sqft_in_gis,
+parcels_with_constraints.faz_id,
+parcels_with_constraints.zone_id,
+parcels_with_constraints.land_use_type_id,
+parcels_with_constraints.number_of_residential_constraints,
+parcels_with_constraints.minimum_dwelling_units_per_acre,
+parcels_with_constraints.maximum_dwelling_units_per_acre,
+parcels_with_constraints.number_of_non_residential_constraints,
+parcels_with_constraints.minimum_far,
+parcels_with_constraints.maximum_far,
+built_2014.residential_units_2014,
+built_2014.non_residential_sqft_2014,
+built_2014.residential_sqft_2014  ## NEW 4-13-18
+From parcels_with_constraints
+Left Join built_2014
+On parcels_with_constraints.parcel_id=built_2014.parcel_id
+;
+Alter table parcels_with_built_2014 Add Primary Key (parcel_id)
+;
+Create Table parcels_with_built_2014_2040
+Select
+parcels_with_built_2014.parcel_id,
+parcels_with_built_2014.city_id,
+parcels_with_built_2014.regional_geography_id,
+parcels_with_built_2014.county_id,
+parcels_with_built_2014.plan_type_id,
+#parcels_with_built_2014.id_parcel,
+parcels_with_built_2014.is_inside_urban_growth_boundary,
+parcels_with_built_2014.parcel_sqft,
+parcels_with_built_2014.large_area_id,
+parcels_with_built_2014.land_value,
+#parcels_with_built_2014.parcel_sqft_in_gis,
+parcels_with_built_2014.faz_id,
+parcels_with_built_2014.zone_id,
+parcels_with_built_2014.land_use_type_id,
+parcels_with_built_2014.number_of_residential_constraints,
+parcels_with_built_2014.minimum_dwelling_units_per_acre,
+parcels_with_built_2014.maximum_dwelling_units_per_acre,
+parcels_with_built_2014.number_of_non_residential_constraints,
+parcels_with_built_2014.minimum_far,
+parcels_with_built_2014.maximum_far,
+parcels_with_built_2014.residential_units_2014,
+parcels_with_built_2014.non_residential_sqft_2014,
+parcels_with_built_2014.residential_sqft_2014,  ## NEW 4-13-18
+built_2040.residential_units_2040,
+built_2040.non_residential_sqft_2040,
+built_2040.residential_sqft_2040,  ## NEW 4-13-18
+built_2040.year_built,  ## NEW 7-3-17
+built_2040.template_id  ## NEW 7-3-17
+From parcels_with_built_2014
+Left Join built_2040
+On parcels_with_built_2014.parcel_id=built_2040.parcel_id
+;
+Alter table parcels_with_built_2014_2040 Add Primary Key (parcel_id)
+;
+# Safety measure: for parcels that didn’t have units or SQFT in 2014 and 2040, replacing the null values with zeros –
+# I think Null values just get omitted from counts and sums, and might impact other functions as well…?
+Update parcels_with_built_2014_2040 Set residential_units_2014 = 0 where isnull(residential_units_2014)=1;
+Update parcels_with_built_2014_2040 Set residential_units_2040 = 0 where isnull(residential_units_2040)=1;
+Update parcels_with_built_2014_2040 Set non_residential_sqft_2014 = 0 where isnull(non_residential_sqft_2014)=1;
+Update parcels_with_built_2014_2040 Set non_residential_sqft_2040 = 0 where isnull(non_residential_sqft_2040)=1;
+Update parcels_with_built_2014_2040 Set residential_sqft_2014 = 0 where isnull(residential_sqft_2014)=1;
+Update parcels_with_built_2014_2040 Set residential_sqft_2040 = 0 where isnull(residential_sqft_2040)=1;
+Update parcels_with_built_2014_2040 Set year_built = 0 where isnull(year_built)=1;  ## NEW 7-3-17
+Update parcels_with_built_2014_2040 Set template_id = 0 where isnull(template_id)=1;  ## NEW 7-3-17
+# Adding a series of columns preceding the development capacity for each of the parcel, density-intensity category, and
+# whether the parcels has both FAR and Unit constraints attached. (Is Mixed Use)
+Alter Table parcels_with_built_2014_2040 Add column residential_density_category char(20);
+Alter Table parcels_with_built_2014_2040 Add column residential_unit_capacity integer;
+Alter Table parcels_with_built_2014_2040 Add column net_2014_residential_unit_capacity integer;
+Alter Table parcels_with_built_2014_2040 Add column net_2040_residential_unit_capacity integer;
+Alter Table parcels_with_built_2014_2040 Add column is_mixed_use char(5);
+Alter Table parcels_with_built_2014_2040 Add column allowable_far_category char(20);
+Alter Table parcels_with_built_2014_2040 Add column non_residential_sqft_capacity integer;
+Alter Table parcels_with_built_2014_2040 Add column net_2014_non_residential_sqft_capacity integer;
+Alter Table parcels_with_built_2014_2040 Add column net_2040_non_residential_sqft_capacity integer;
+# Capacity calculations – gross density, net 2000 and net 2040 capacity, and making the null values again into zeros.
+Update parcels_with_built_2014_2040 Set residential_unit_capacity = parcel_sqft / 43560 * maximum_dwelling_units_per_acre;
+Update parcels_with_built_2014_2040 Set net_2014_residential_unit_capacity = residential_unit_capacity - residential_units_2014;
+Update parcels_with_built_2014_2040 Set net_2040_residential_unit_capacity = residential_unit_capacity - residential_units_2040;
+Update parcels_with_built_2014_2040 Set net_2014_residential_unit_capacity = 0 where net_2014_residential_unit_capacity<0;
+Update parcels_with_built_2014_2040 Set net_2014_residential_unit_capacity = 0 where isnull(net_2014_residential_unit_capacity)=1;
+Update parcels_with_built_2014_2040 Set net_2040_residential_unit_capacity = 0 where net_2040_residential_unit_capacity<0;
+Update parcels_with_built_2014_2040 Set net_2040_residential_unit_capacity = 0 where isnull(net_2040_residential_unit_capacity)=1;
+Update parcels_with_built_2014_2040 Set is_mixed_use = 'no';
+Update parcels_with_built_2014_2040 Set is_mixed_use = 'yes' where maximum_dwelling_units_per_acre > 0 and maximum_far > 0;
+# Same capacity calculations for the non-res side…note there’s no setbacks assumed, FAR capacity uses the entire parcel in this
+# calculation
+Update parcels_with_built_2014_2040 Set non_residential_sqft_capacity = 0;
+Update parcels_with_built_2014_2040 Set non_residential_sqft_capacity = parcel_sqft * maximum_far where maximum_far>-1;
+Update parcels_with_built_2014_2040 Set net_2014_non_residential_sqft_capacity = non_residential_sqft_capacity - non_residential_sqft_2014;
+Update parcels_with_built_2014_2040 Set net_2040_non_residential_sqft_capacity = non_residential_sqft_capacity - non_residential_sqft_2040;
+Update parcels_with_built_2014_2040 Set net_2014_non_residential_sqft_capacity = 0 where net_2014_non_residential_sqft_capacity<0;
+Update parcels_with_built_2014_2040 Set net_2014_non_residential_sqft_capacity = 0 where isnull(net_2014_non_residential_sqft_capacity)=1;
+Update parcels_with_built_2014_2040 Set net_2040_non_residential_sqft_capacity = 0 where net_2040_non_residential_sqft_capacity<0;
+Update parcels_with_built_2014_2040 Set net_2040_non_residential_sqft_capacity = 0 where isnull(net_2040_non_residential_sqft_capacity)=1;
+# Filling in the category variables….see introductory text for the summary of these
+Update parcels_with_built_2014_2040 Set residential_density_category = 'none' where maximum_dwelling_units_per_acre = 0;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'rural' where maximum_dwelling_units_per_acre > 0 and maximum_dwelling_units_per_acre <= 1;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'light' where maximum_dwelling_units_per_acre > 1 and maximum_dwelling_units_per_acre <4;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'low' where maximum_dwelling_units_per_acre >= 4 and maximum_dwelling_units_per_acre <7;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'medium' where maximum_dwelling_units_per_acre >= 7 and maximum_dwelling_units_per_acre <11;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'high' where maximum_dwelling_units_per_acre >= 11 and maximum_dwelling_units_per_acre <24;
+Update parcels_with_built_2014_2040 Set residential_density_category = 'highest' where maximum_dwelling_units_per_acre >= 24;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'na' where maximum_far = -1.0;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'none' where maximum_far = 0;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far to 0.5' where maximum_far > 0 and maximum_far <= 0.5;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far 0.5 to 1.0' where maximum_far > 0.5 and maximum_far <= 1;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far 1.0 to 2.0' where maximum_far > 1.0 and maximum_far <= 2;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far 2.0 to 4.0' where maximum_far > 2.0 and maximum_far <= 4;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far 4.0 to 6.0' where maximum_far > 4.0 and maximum_far <= 6;
+Update parcels_with_built_2014_2040 Set allowable_far_category = 'far over 6.0' where maximum_far > 6.0;
+# Next is to take the ‘current’ master parcels table, at this point its parcels_with_built_2014_2040, and add the regional growth
+# center geography to it
+# Updated July 2017 to use current 2014 parcels table contents for this
+
+create table parcels_in_regional_growth_centers
+select parcel_id, growth_center_id
+from luv2_lodes_final_outputs_2014.parcels
+where growth_center_id >499
+order by growth_center_id, parcel_id
+;
+alter table parcels_in_regional_growth_centers add primary key(parcel_id)
+;
+CREATE TABLE temp_1
+SELECT
+parcels_with_built_2014_2040.parcel_id,
+parcels_with_built_2014_2040.city_id,
+parcels_with_built_2014_2040.regional_geography_id,
+parcels_with_built_2014_2040.county_id,
+parcels_with_built_2014_2040.plan_type_id,
+#parcels_with_built_2014_2040.id_parcel,
+parcels_with_built_2014_2040.is_inside_urban_growth_boundary,
+parcels_with_built_2014_2040.parcel_sqft,
+parcels_with_built_2014_2040.large_area_id,
+parcels_with_built_2014_2040.land_value,
+#parcels_with_built_2014_2040.parcel_sqft_in_gis,
+parcels_with_built_2014_2040.faz_id,
+parcels_with_built_2014_2040.zone_id,
+parcels_with_built_2014_2040.land_use_type_id,
+parcels_with_built_2014_2040.number_of_residential_constraints,
+parcels_with_built_2014_2040.minimum_dwelling_units_per_acre,
+parcels_with_built_2014_2040.maximum_dwelling_units_per_acre,
+parcels_with_built_2014_2040.number_of_non_residential_constraints,
+parcels_with_built_2014_2040.minimum_far,
+parcels_with_built_2014_2040.maximum_far,
+parcels_with_built_2014_2040.residential_units_2014,
+parcels_with_built_2014_2040.non_residential_sqft_2014,
+parcels_with_built_2014_2040.residential_sqft_2014,  ## NEW 4-13-18
+parcels_with_built_2014_2040.residential_units_2040,
+parcels_with_built_2014_2040.non_residential_sqft_2040,
+parcels_with_built_2014_2040.residential_sqft_2040,  ## NEW 4-13-18
+parcels_with_built_2014_2040.residential_density_category,
+parcels_with_built_2014_2040.residential_unit_capacity,
+parcels_with_built_2014_2040.net_2014_residential_unit_capacity,
+parcels_with_built_2014_2040.net_2040_residential_unit_capacity,
+parcels_with_built_2014_2040.is_mixed_use,
+parcels_with_built_2014_2040.allowable_far_category,
+parcels_with_built_2014_2040.non_residential_sqft_capacity,
+parcels_with_built_2014_2040.net_2014_non_residential_sqft_capacity,
+parcels_with_built_2014_2040.net_2040_non_residential_sqft_capacity,
+parcels_with_built_2014_2040.year_built,
+parcels_with_built_2014_2040.template_id,
+parcels_in_regional_growth_centers.growth_center_id as rgc_id
+FROM parcels_with_built_2014_2040
+LEFT JOIN parcels_in_regional_growth_centers
+ON parcels_with_built_2014_2040.parcel_id=parcels_in_regional_growth_centers.parcel_id
+;
+# Dropping the previous version of the parcels_with_built_2014_2040 table and replacing it with the contents of the temp table
+# above, also replacing the Null value rgc_id entries with zero
+Alter Table temp_1 add primary key (parcel_id);
+Update temp_1 Set rgc_id = 0 where isnull(rgc_id)=1;
+Drop table if exists parcels_with_built_2014_2040;
+CREATE TABLE parcels_with_built_2014_2040 LIKE temp_1;
+INSERT parcels_with_built_2014_2040 SELECT * FROM temp_1;
+Drop table if exists residential_development_constraints_summary;
+Drop table if exists non_residential_development_constraints_summary;
+Drop table if exists development_constraints_summary;
+Drop table if exists parcels_with_constraints;
+Drop table if exists built_2014;
+Drop table if exists built_2040;
+Drop table if exists parcels_with_built_2014;
+Drop table if exists temp_1;
+Drop table if exists parcels_in_regional_growth_centers;
+## =====
+## Moving all the add column statements up here for ordering file
+## =====
+alter table parcels_with_built_2014_2040
+add column land_use_type_id_2014 integer
+,add column land_use_type_id_2040 integer
+,add column built_du_acre_14 float
+,add column built_du_acre_40 float
+,add column built_far_14 float
+,add column built_far_40 float
+,add column x_coord_sp float
+,add column y_coord_sp float
+,add column g1_du_max float
+,add column g2_du_max float
+,add column g3_far_max float
+,add column g4_far_max float
+,add column g5_far_max float
+,add column g6_du_max float
+,add column g6_far_max float
+,add column parcel_is_locked_out integer
+,add column jobs_14 integer
+,add column jobs_40 integer
+,add column households_14 integer
+,add column households_40 integer
+,add column persons_14 integer
+,add column persons_40 integer
+,add column hu_14 integer
+,add column hu_40 integer
+,add column res_sqft_14 integer
+,add column res_sqft_40 integer
+,add column nonres_sqft_14 integer
+,add column nonres_sqft_40 integer
+,add column job_chg_14_40 integer
+,add column hh_chg_14_40 integer
+,add column per_chg_14_40 integer
+,add column hu_chg_14_40 integer
+,add column res_sqft_chg_14_40 integer
+,add column nonres_sqft_chg_14_40 integer
+,add column got_vacant_land_proposal integer
+,add column got_redevelopment_proposal integer
+,add column got_proposal_of_either_type integer
+,add column had_development_event integer
+,add column redevel_w_age_filter integer
+,add column redevel_no_age_filter integer
+,add column has_mpd integer
+,add column mpd_year integer
+,add column mpd_units integer
+,add column mpd_sqft integer
+,add column mpd_split_use_sqft integer
+,add column mpd_split_use_housing_units_added float
+,add column mpd_split_use_nonres_sqft_added float
+;
+# =======================================
+# == Development Constraints section ======
+# =======================================
+Create Table development_constraints_crosstab_summary
+Select
+development_constraints.plan_type_id,
+count(constraint_id) as number_of_constraints
+from development_constraints
+group by plan_type_id;
+alter table development_constraints_crosstab_summary
+add column g1_du_min float,
+add column g1_du_max float,
+add column g1_far_min float,
+add column g1_far_max float,
+add column g2_du_min float,
+add column g2_du_max float,
+add column g2_far_min float,
+add column g2_far_max float,
+add column g3_du_min float,
+add column g3_du_max float,
+add column g3_far_min float,
+add column g3_far_max float,
+add column g4_du_min float,
+add column g4_du_max float,
+add column g4_far_min float,
+add column g4_far_max float,
+add column g5_du_min float,
+add column g5_du_max float,
+add column g5_far_min float,
+add column g5_far_max float,
+add column g6_du_min float,
+add column g6_du_max float,
+add column g6_far_min float,
+add column g6_far_max float
+;
+update development_constraints_crosstab_summary set
+g1_du_min = 0,
+g1_du_max = 0,
+g1_far_min = 0,
+g1_far_max = 0,
+g2_du_min = 0,
+g2_du_max = 0,
+g2_far_min = 0,
+g2_far_max = 0,
+g3_du_min = 0,
+g3_du_max = 0,
+g3_far_min = 0,
+g3_far_max = 0,
+g4_du_min = 0,
+g4_du_max = 0,
+g4_far_min = 0,
+g4_far_max = 0,
+g5_du_min = 0,
+g5_du_max = 0,
+g5_far_min = 0,
+g5_far_max = 0,
+g6_du_min = 0,
+g6_du_max = 0,
+g6_far_min = 0,
+g6_far_max = 0
+;
+alter table development_constraints_crosstab_summary add primary key(plan_type_id);
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g1_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g1_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=1
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g1_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g1_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=1
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g2_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g2_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=2
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g2_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g2_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=2
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g3_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g3_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=3
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g3_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g3_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=3
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g4_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g4_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=4
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g4_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g4_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=4
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g5_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g5_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=5
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g5_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g5_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=5
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g6_du_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g6_du_max=development_constraints.maximum
+where development_constraints.constraint_type='units_per_acre'
+and development_constraints.generic_land_use_type_id=6
+;
+update development_constraints_crosstab_summary
+inner join development_constraints
+on development_constraints_crosstab_summary.plan_type_id=development_constraints.plan_type_id
+set development_constraints_crosstab_summary.g6_far_min=development_constraints.minimum,
+development_constraints_crosstab_summary.g6_far_max=development_constraints.maximum
+where development_constraints.constraint_type='far'
+and development_constraints.generic_land_use_type_id=6
+;
+update parcels_with_built_2014_2040
+set g1_du_max =0,
+g2_du_max =0,
+g3_far_max =0,
+g4_far_max =0,
+g5_far_max =0,
+g6_du_max =0,
+g6_far_max =0
+;
+update parcels_with_built_2014_2040
+inner join development_constraints_crosstab_summary
+on parcels_with_built_2014_2040.plan_type_id=development_constraints_crosstab_summary.plan_type_id
+set
+parcels_with_built_2014_2040.g1_du_max=development_constraints_crosstab_summary.g1_du_max,
+parcels_with_built_2014_2040.g2_du_max=development_constraints_crosstab_summary.g2_du_max,
+parcels_with_built_2014_2040.g3_far_max=development_constraints_crosstab_summary.g3_far_max,
+parcels_with_built_2014_2040.g4_far_max=development_constraints_crosstab_summary.g4_far_max,
+parcels_with_built_2014_2040.g5_far_max=development_constraints_crosstab_summary.g5_far_max,
+parcels_with_built_2014_2040.g6_du_max=development_constraints_crosstab_summary.g6_du_max,
+parcels_with_built_2014_2040.g6_far_max=development_constraints_crosstab_summary.g6_far_max
+;
+# ==
+# Adding XY
+# ====
+update parcels_with_built_2014_2040
+set x_coord_sp = 0
+,y_coord_sp = 0;
+update parcels_with_built_2014_2040 b
+inner join parcels p
+on b.parcel_id = p.parcel_id
+set b.x_coord_sp = p.x_coord_sp
+,b.y_coord_sp = p.y_coord_sp;
+# ==
+# Pre mpd - supplement development_templates
+# ==
+alter table development_template_components add column res_or_non text;
+update development_template_components set res_or_non = 'not assigned';
+update development_template_components set res_or_non = 'res'
+where building_type in
+(
+'mfr_apartment'
+,'mfr_condo'
+,'sfr_parcel'
+,'sfr_plat'
+)
+;
+update development_template_components set res_or_non = 'non'
+where building_type in
+(
+'com'
+,'ind'
+,'off'
+,'tcu'
+,'ware'
+)
+;
+alter table
+development_template_components add column percent_res float;
+update development_template_components set percent_res = 0
+;
+update development_template_components
+set percent_res = percent_building_sqft
+where res_or_non = 'res'
+;
+create table temp
+select
+template_id
+,max(percent_res) as percent_res
+,max(building_sqft_per_unit) as building_sqft_per_unit
+from development_template_components
+group by template_id;
+alter table temp add primary key(template_id)
+;
+alter table
+development_templates add column percent_res float;
+alter table
+development_templates add column building_sqft_per_unit float;
+update development_templates set percent_res = 0;
+update development_templates set building_sqft_per_unit =0
+;
+update development_templates d
+inner join temp t
+on d.template_id = t.template_id
+set d.percent_res = t.percent_res
+,d.building_sqft_per_unit = t.building_sqft_per_unit
+;
+# ==
+# Green code - corrections to MPD to do it by parcel ?
+# ==
+create table mpds
+SELECT * FROM development_project_proposals;
+alter table mpds add primary key(proposal_id)
+;
+SELECT * FROM mpds m;
+alter table mpds
+add column split_use_sqft_added integer
+,add column development_type text
+,add column du_added integer
+,add column sqft_added integer;
+update mpds
+set split_use_sqft_added = 0
+,development_type = 'not assigned yet'
+,du_added = 0,
+sqft_added = 0;
+update mpds m
+inner join development_templates t
+on m.template_id = t.template_id
+set m.development_type = t.development_type;
+update mpds set du_added = units_proposed
+where development_type in
+(
+'mfr_apartment'
+,'mfr_condo'
+,'mix_mfr_condo'
+,'sfr_parcel'
+,'sfr_plat'
+)
+;
+update mpds set sqft_added = units_proposed
+where development_type in
+(
+'com'
+,'ind'
+,'mix_com'
+,'mix_com_ind'
+,'mix_com_off'
+,'off'
+,'mix_off'
+)
+;
+update mpds set split_use_sqft_added = units_proposed
+where development_type in
+(
+'mix_off_res'
+,'mix_com_res'
+)
+;
+alter table mpds
+add column percent_res float
+,add column building_sqft_per_unit float
+,add column split_use_housing_units_added float
+,add column split_use_nonres_sqft_added float;
+update mpds set
+percent_res = 0
+,building_sqft_per_unit = 0
+,split_use_housing_units_added =0
+,split_use_nonres_sqft_added =0;
+update mpds m
+inner join development_templates d
+on m.template_id = d.template_id
+set m.building_sqft_per_unit = d.building_sqft_per_unit
+,m.percent_res = d.percent_res;
+update mpds
+set split_use_housing_units_added = round((units_proposed * (percent_res/100))/ building_sqft_per_unit,0)
+where split_use_sqft_added>0;
+update mpds
+set split_use_nonres_sqft_added = units_proposed - (split_use_housing_units_added * building_sqft_per_unit)
+where split_use_sqft_added>0;
+create table mpds_by_parcel_subtotal
+select
+parcel_id
+,count(proposal_id) as proposals
+,min(start_year) as min_start_year
+,max(start_year) as max_start_year
+,sum(units_proposed) as units_proposed
+,sum(du_added) as du_added
+,sum(sqft_added) as sqft_added
+,sum(split_use_sqft_added) as split_use_sqft_added
+,sum(split_use_housing_units_added) as split_use_housing_units_added
+,sum(split_use_nonres_sqft_added) as split_use_nonres_sqft_added
+from mpds
+group by parcel_id;
+alter table mpds_by_parcel_subtotal add primary key (parcel_id);
+# ==
+# PWB and MPD fields
+# ==
+update parcels_with_built_2014_2040
+set
+has_mpd = 0
+,mpd_year = 0
+,mpd_units = 0
+,mpd_sqft = 0
+,mpd_split_use_sqft = 0
+,mpd_split_use_housing_units_added = 0
+,mpd_split_use_nonres_sqft_added = 0
+;
+update parcels_with_built_2014_2040 p
+inner join mpds_by_parcel_subtotal m
+on p.parcel_id = m.parcel_id
+set
+p.has_mpd = 1
+,p.mpd_year = m.min_start_year
+,p.mpd_units = m.du_added
+,p.mpd_sqft = m.sqft_added
+,p.mpd_split_use_sqft = m.split_use_sqft_added
+,p.mpd_split_use_housing_units_added = m.split_use_housing_units_added
+,p.mpd_split_use_nonres_sqft_added = m.split_use_nonres_sqft_added
+;
+update parcels_with_built_2014_2040
+set mpd_units = mpd_units + mpd_split_use_housing_units_added
+,mpd_sqft = mpd_sqft + mpd_split_use_nonres_sqft_added;
+alter table parcels_with_built_2014_2040
+drop column mpd_split_use_housing_units_added
+,drop column mpd_split_use_nonres_sqft_added;
+# ====
+# Built Densities
+# ====
+update parcels_with_built_2014_2040
+set built_du_acre_14 = 0
+,built_du_acre_40 = 0
+,built_far_14 = 0
+,built_far_40 = 0;
+update parcels_with_built_2014_2040
+set built_du_acre_14 = residential_units_2014 / (parcel_sqft/43560)
+,built_du_acre_40 = residential_units_2040 / (parcel_sqft/43560)
+,built_far_14 = non_residential_sqft_2014 / parcel_sqft
+,built_far_40 = non_residential_sqft_2040 / parcel_sqft;
+# ===
+# Lockout or not
+# ===
+update parcels_with_built_2014_2040
+set parcel_is_locked_out = 0;
+update parcels_with_built_2014_2040
+set parcel_is_locked_out = 1
+where
+g1_du_max =0
+and g2_du_max =0
+and g3_far_max =0
+and g4_far_max =0
+and g5_far_max =0
+and g6_du_max =0
+and g6_far_max =0;
+
+# ==============
+# New July 2017
+# Adding some details on template chosen for development
+# ==============
+
+alter table parcels_with_built_2014_2040
+add column template_development_type text
+,add column template_density float
+,add column template_percent_res float
+;
+update parcels_with_built_2014_2040 set
+template_development_type = 'not set yet'
+,template_density = 0
+,template_percent_res=0
+;
+update parcels_with_built_2014_2040 p
+inner join development_templates t
+on p.template_id = t.template_id
+set p.template_development_type = t.development_type
+,p.template_density = t.density
+,p.template_percent_res = t.percent_res
+;
+
+# ====================
+# == DPP Section ====
+# ====================
+
+/*
+create table parcels_with_redevelopment_proposals_2015
+SELECT
+parcel_id,
+count(proposal_id) as proposals
+FROM luv2_final_outputs_2015.development_project_proposals  ## Changed to 2015 4-13-15
+where is_redevelopment=1
+group by parcel_id;
+create table parcels_with_vacant_land_proposals_2015
+SELECT
+parcel_id,
+count(proposal_id) as proposals
+FROM luv2_final_outputs_2015.development_project_proposals  ## Changed to 2015 4-13-15
+where is_redevelopment=0
+group by parcel_id;
+alter table parcels_with_redevelopment_proposals_2015 add primary key (parcel_id);
+alter table parcels_with_vacant_land_proposals_2015 add primary key (parcel_id);
+Update parcels_with_built_2014_2040 set got_vacant_land_proposal = 0;
+Update parcels_with_built_2014_2040 set got_redevelopment_proposal = 0;
+update parcels_with_built_2014_2040
+inner join parcels_with_vacant_land_proposals_2015
+on parcels_with_built_2014_2040.parcel_id=parcels_with_vacant_land_proposals_2015.parcel_id
+set parcels_with_built_2014_2040.got_vacant_land_proposal=1;
+update parcels_with_built_2014_2040
+inner join parcels_with_redevelopment_proposals_2015
+on parcels_with_built_2014_2040.parcel_id=parcels_with_redevelopment_proposals_2015.parcel_id
+set parcels_with_built_2014_2040.got_redevelopment_proposal=1;
+update parcels_with_built_2014_2040 set got_proposal_of_either_type =0;
+update parcels_with_built_2014_2040 set got_proposal_of_either_type =1
+where (got_vacant_land_proposal = 1 or got_redevelopment_proposal=1);
+update parcels_with_built_2014_2040 set had_development_event =0;
+update parcels_with_built_2014_2040 set had_development_event = 1
+where residential_units_2014 <> residential_units_2040
+or non_residential_sqft_2014 <> non_residential_sqft_2040;
+#alter table redevelopment_filter_on_run_213_2001_parcels add primary key (parcel_id);
+#update parcels_with_built_2000_2040 p
+#inner join redevelopment_filter_on_run_213_2001_parcels r
+#on p.parcel_id = r.parcel_id
+#set p.redevel_w_age_filter = r.redevel_w_age_filter
+#,p.redevel_no_age_filter = r.redevel_no_age_filter;
+*/
+
+
+# ====================
+# == Jobs and HHs section == 2014
+# ==================
+create table jobs_2014
+select building_id, count(job_id) as jobs
+from jobs
+group by building_id;
+
+alter table jobs_2014 add primary key(building_id);
+alter table jobs_2014 add column parcel_id integer;
+update jobs_2014 set parcel_id=0;
+
+update jobs_2014
+inner join buildings
+on jobs_2014.building_id=buildings.building_id
+set jobs_2014.parcel_id=buildings.parcel_id;
+
+create table jobs_2014_by_parcel
+select parcel_id, sum(jobs) as jobs
+from jobs_2014
+group by parcel_id;
+
+alter table jobs_2014_by_parcel add primary key(parcel_id);
+update parcels_with_built_2014_2040 set jobs_14 =0;
+
+update parcels_with_built_2014_2040
+inner join jobs_2014_by_parcel
+on parcels_with_built_2014_2040.parcel_id=jobs_2014_by_parcel.parcel_id
+set parcels_with_built_2014_2040.jobs_14=jobs_2014_by_parcel.jobs;
+
+create table households_2014
+select building_id, count(household_id) as households, sum(persons) as persons
+from households
+group by building_id;
+
+alter table households_2014 add primary key (building_id);
+alter table households_2014 add column parcel_id integer;
+update households_2014 set parcel_id=0;
+
+update households_2014
+inner join buildings
+on households_2014.building_id=buildings.building_id
+set households_2014.parcel_id=buildings.parcel_id;
+
+create table households_2014_by_parcel
+select parcel_id, sum(households) as households, sum(persons) as persons
+from households_2014
+group by parcel_id;
+
+alter table households_2014_by_parcel add primary key(parcel_id);
+update parcels_with_built_2014_2040 set households_14 =0;
+update parcels_with_built_2014_2040 set persons_14 =0;
+
+update parcels_with_built_2014_2040
+inner join households_2014_by_parcel
+on parcels_with_built_2014_2040.parcel_id=households_2014_by_parcel.parcel_id
+set parcels_with_built_2014_2040.households_14=households_2014_by_parcel.households,
+parcels_with_built_2014_2040.persons_14=households_2014_by_parcel.persons;
+
+update parcels_with_built_2014_2040
+set hu_14 = residential_units_2014
+,res_sqft_14 = residential_sqft_2014
+,nonres_sqft_14 = non_residential_sqft_2014
+;
+
+# ====================
+# == Jobs and HHs section == 2040
+# ==================
+create table jobs_2040
+select building_id, count(job_id) as jobs
+from luv2_lodes_final_outputs_2040.jobs
+group by building_id;
+alter table jobs_2040 add primary key(building_id);
+alter table jobs_2040 add column parcel_id integer;
+update jobs_2040 set parcel_id=0;
+
+update jobs_2040
+inner join luv2_lodes_final_outputs_2040.buildings
+on jobs_2040.building_id=luv2_lodes_final_outputs_2040.buildings.building_id
+set jobs_2040.parcel_id=luv2_lodes_final_outputs_2040.buildings.parcel_id;
+create table jobs_2040_by_parcel
+select parcel_id, sum(jobs) as jobs
+from jobs_2040
+group by parcel_id;
+
+alter table jobs_2040_by_parcel add primary key(parcel_id);
+update parcels_with_built_2014_2040 set jobs_40 =0;
+update parcels_with_built_2014_2040 set job_chg_14_40 =0;
+
+update parcels_with_built_2014_2040
+inner join jobs_2040_by_parcel
+on parcels_with_built_2014_2040.parcel_id=jobs_2040_by_parcel.parcel_id
+set parcels_with_built_2014_2040.jobs_40=jobs_2040_by_parcel.jobs;
+
+update parcels_with_built_2014_2040 set job_chg_14_40=jobs_40-jobs_14;
+
+create table households_2040
+select building_id,
+count(household_id) as households,
+sum(persons) as persons
+from luv2_lodes_final_outputs_2040.households
+group by building_id;
+
+alter table households_2040 add primary key (building_id);
+alter table households_2040 add column parcel_id integer;
+update households_2040 set parcel_id=0;
+
+update households_2040
+inner join luv2_lodes_final_outputs_2040.buildings
+on households_2040.building_id=luv2_lodes_final_outputs_2040.buildings.building_id
+set households_2040.parcel_id=luv2_lodes_final_outputs_2040.buildings.parcel_id;
+
+create table households_2040_by_parcel
+select parcel_id, sum(households) as households, sum(persons) as persons
+from households_2040
+group by parcel_id;
+
+alter table households_2040_by_parcel add primary key(parcel_id);
+update parcels_with_built_2014_2040 set households_40 =0;
+update parcels_with_built_2014_2040 set hh_chg_14_40 =0;
+update parcels_with_built_2014_2040 set persons_40 =0;
+update parcels_with_built_2014_2040 set per_chg_14_40 =0;
+
+update parcels_with_built_2014_2040
+inner join households_2040_by_parcel
+on parcels_with_built_2014_2040.parcel_id=households_2040_by_parcel.parcel_id
+set parcels_with_built_2014_2040.households_40=households_2040_by_parcel.households,
+parcels_with_built_2014_2040.persons_40=households_2040_by_parcel.persons;
+
+update parcels_with_built_2014_2040 set hh_chg_14_40=households_40-households_14;
+update parcels_with_built_2014_2040 set per_chg_14_40=persons_40-persons_14;
+update parcels_with_built_2014_2040 set land_use_type_id_2014 = land_use_type_id;
+update parcels_with_built_2014_2040
+inner join luv2_lodes_final_outputs_2040.parcels
+on parcels_with_built_2014_2040.parcel_id=luv2_lodes_final_outputs_2040.parcels.parcel_id
+set parcels_with_built_2014_2040.land_use_type_id_2040=luv2_lodes_final_outputs_2040.parcels.land_use_type_id
+;
+Create table built_2040
+Select
+luv2_lodes_final_outputs_2040.buildings.parcel_id,
+sum(luv2_lodes_final_outputs_2040.buildings.residential_units) as residential_units_2040,
+sum(luv2_lodes_final_outputs_2040.buildings.residential_units * luv2_lodes_final_outputs_2040.buildings.sqft_per_unit) as residential_sqft_2040,
+sum(luv2_lodes_final_outputs_2040.buildings.non_residential_sqft) as non_residential_sqft_2040
+From luv2_lodes_final_outputs_2040.buildings
+Group by luv2_lodes_final_outputs_2040.buildings.parcel_id;
+
+alter table built_2040 add primary key(parcel_id);
+
+update parcels_with_built_2014_2040
+set hu_40 = 0
+,res_sqft_40=0
+,nonres_sqft_40 = 0;
+
+update parcels_with_built_2014_2040
+set hu_40 = 0
+,res_sqft_40 = 0
+,nonres_sqft_40 = 0;
+
+update parcels_with_built_2014_2040 p
+inner join built_2040 b
+on p.parcel_id = b.parcel_id
+set p.hu_40 = b.residential_units_2040
+,p.res_sqft_40 = b.residential_sqft_2040
+,p.nonres_sqft_40 = b.non_residential_sqft_2040;
+
+update parcels_with_built_2014_2040 set hu_chg_14_40 = hu_40-hu_14;
+update parcels_with_built_2014_2040 set res_sqft_chg_14_40 = res_sqft_40-res_sqft_14;
+update parcels_with_built_2014_2040 set nonres_sqft_chg_14_40 = nonres_sqft_40-nonres_sqft_14;
+
+Drop table if exists residential_development_constraints_summary;
+Drop table if exists non_residential_development_constraints_summary;
+Drop table if exists development_constraints_summary;
+Drop table if exists parcels_with_constraints;
+Drop table if exists built_2014;
+Drop table if exists built_2040;
+Drop table if exists parcels_with_built_2014;
+Drop table if exists temp_1;
+Drop table if exists parcels_in_regional_growth_centers;
+Drop table if exists development_constraints_crosstab_summary;
+drop table if exists parcels_with_redevelopment_proposals_2015;
+drop table if exists parcels_with_development_proposals_2015;
+drop table if exists parcels_with_vacant_land_proposals_2015;
+drop table if exists temp;
+drop table if exists mpds;
+drop table if exists mpds_by_parcel_subtotal;
+drop table if exists jobs_2014;
+drop table if exists jobs_2014_by_parcel;
+drop table if exists households_2014;
+drop table if exists households_2014_by_parcel;
+drop table if exists jobs_2040;
+drop table if exists jobs_2040_by_parcel;
+drop table if exists households_2040;
+drop table if exists households_2040_by_parcel;
