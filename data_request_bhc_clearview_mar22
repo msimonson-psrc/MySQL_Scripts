@@ -1,0 +1,143 @@
+create database data_request_bhc_clearviewwsa_tittelfitz_20220311;
+
+## LUV2 Parcels
+
+drop table if exists data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_in_sa;
+
+create table data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_in_sa
+(
+parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,descript varchar(30) not null
+,clearview_id integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/BHC_ClearviewWSA_Tittelfitz_Mar2022/luv2_parcels_in_sa.csv'
+INTO TABLE data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_in_sa
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,descript
+,clearview_id
+);
+
+select * from data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_in_sa;
+
+## RGS parcels
+
+drop table if exists data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_in_sa;
+
+create table data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_in_sa
+(
+parcel_id integer not null
+,x_coord_sp integer not null
+,y_coord_sp integer not null
+,descript varchar(30) not null
+,clearview_id integer not null
+,primary key (parcel_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/BHC_ClearviewWSA_Tittelfitz_Mar2022/rgs_parcels_in_sa.csv'
+INTO TABLE data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_in_sa
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+parcel_id
+,x_coord_sp
+,y_coord_sp
+,descript
+,clearview_id
+);
+
+select * from data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_in_sa;
+
+
+####
+# vv_basin_id	vv_basin_name	vv_major_basin	vv_basin_full_class
+####
+
+drop table if exists data_request_bhc_clearviewwsa_tittelfitz_20220311.clearview;
+
+
+create table data_request_bhc_clearviewwsa_tittelfitz_20220311.clearview
+(
+clearview_id integer not null
+,descript varchar(30) not null
+,primary key (clearview_id)
+);
+
+LOAD DATA LOCAL INFILE 'J:/Projects/LandUseVision/LUV.2/Final/Requests/BHC_ClearviewWSA_Tittelfitz_Mar2022/clearview.csv'
+INTO TABLE data_request_bhc_clearviewwsa_tittelfitz_20220311.clearview
+FIELDS TERMINATED BY ','
+#ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
+(
+clearview_id
+,descript
+);
+
+select * from data_request_bhc_clearviewwsa_tittelfitz_20220311.clearview;
+
+## LUV2 parcel combine
+
+create table data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_w_sa
+SELECT * FROM luv2_lodes_final_outputs_2014.parcels;
+
+alter table data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_w_sa
+add primary key(parcel_id)
+,add column clearview_id integer
+;
+
+update data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_w_sa
+set clearview_id = 1;
+
+update data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_w_sa w
+inner join data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_in_sa i
+on w.parcel_id = i.parcel_id
+set w.clearview_id = i.clearview_id;
+
+select
+clearview_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+from data_request_bhc_clearviewwsa_tittelfitz_20220311.luv2_parcels_w_sa
+group by
+clearview_id
+;
+
+## LUV2 parcel combine
+
+create table data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_w_sa
+SELECT * FROM v2050_rgs_major_bludd_2014.parcels;
+
+alter table data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_w_sa
+add primary key(parcel_id)
+,add column clearview_id integer
+;
+
+update data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_w_sa
+set clearview_id = 1;
+
+update data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_w_sa w
+inner join data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_in_sa i
+on w.parcel_id = i.parcel_id
+set w.clearview_id = i.clearview_id;
+
+select
+clearview_id
+,count(parcel_id) as parcels
+,sum(parcel_sqft)/43560 as acres
+from data_request_bhc_clearviewwsa_tittelfitz_20220311.rgs_parcels_w_sa
+group by
+clearview_id
+;
